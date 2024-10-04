@@ -21,6 +21,6 @@ void circle(float x, float y, float radius, unsigned char*color);
 
 
 void RenderString(float x, float y, std::string string);
-void draw_bottom_menu(bool PLAY);
+void draw_bottom_menu(bool PLAY, bool simulate);
 
 void draw_nest(float x, float y, unsigned char*color);

@@ -7,9 +7,10 @@
 #include "ants.h"
 
 #include <math.h>
+#include <vector>
 
 
-Ant create_ant(float x, float y, unsigned char *color){
+Ant create_ant(float x, float y, unsigned char *color, bool species){
     Ant A;  
 
     A.radius = 0.02;
@@ -17,8 +18,9 @@ Ant create_ant(float x, float y, unsigned char *color){
     A.y = y;
     A.theta = ((rand()%20)-10)/10.0; // moving direction
     A.r = color[0];
-    A.g = color[1];
+    A.g = color[1] + 50;
     A.b = color[2];
+    A.species = species;
 
     return A; 
 }
@@ -52,6 +54,16 @@ void move_ant(Ant *ant, float distance){
 
 }
 
+std::vector<Ant> create_swarm(float x, float y, unsigned char*color, bool species, int amount){
+    std::vector<Ant> Ants;    
+    Ant A;    
+    for(int i=0; i<amount; i++){
+        A = create_ant(x, y, color, species);
+        Ants.push_back(A); 
+    }
+
+    return Ants;
+}
 
 
 

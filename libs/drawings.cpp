@@ -71,8 +71,20 @@ void RenderString(float x, float y, string string){
 	}
 }
 
+void check_box(float x, float y, bool state, string name){
+    unsigned char color[3];
 
-void draw_bottom_menu(bool PLAY){
+    setColor(color, GREY);    
+    circle(x, y, 0.03, color);
+    setColor(color, BLUE);     
+    if(state) circle(x, y, 0.02, color);
+
+    RenderString(x+0.05, y-0.015, name);
+    
+
+}
+
+void draw_bottom_menu(bool PLAY, bool simulate){
 	unsigned char color[3];
 	
 	// draw a light_grey line in the bottom of the screen
@@ -97,8 +109,11 @@ void draw_bottom_menu(bool PLAY){
     setColor(color, RED);
 	retangle(-0.83, -0.95, 0.05, 0.05, color); 
 
+    check_box(-0.73, -0.95, simulate, "Simulation");
+
 	
 }
+
 
 void draw_nest(float x, float y, unsigned char*color){
     retangle(x, y, 0.2, 0.2, color);

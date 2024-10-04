@@ -6,6 +6,8 @@
 
 #include "libs/drawings.h"
 #include "libs/ants.h"
+
+#include <vector>
 #include <iostream>
 
 using namespace std;
@@ -14,10 +16,10 @@ using namespace std;
 #define windowHeight 900
 #define DEBUG 1
 
-bool PLAY;
+bool PLAY, simulate;
 Ant Antony;
 unsigned char color[3];
-
+vector<Ant> blue_ants, red_ants;
 
 void interface(){
     unsigned char color[3];
@@ -25,9 +27,7 @@ void interface(){
     setColor(color, WHITE); 
     retangle(0, 0, 2, 2, color); // background
 
-    
-    
-    draw_bottom_menu(PLAY);
+    draw_bottom_menu(PLAY, simulate);
 
     setColor(color, BLUE);
     draw_nest(-0.5, -0.5, color);
@@ -37,8 +37,10 @@ void interface(){
     setColor(color, BLACK);
 
     
-    
-    draw_ant(Antony);
+    for(int i=0; i<20; i++){
+        draw_ant(blue_ants[i]);
+        draw_ant(red_ants[i]);             
+    }
     
 
 
@@ -60,7 +62,10 @@ void processInterface(){
     }
     
     if(PLAY){
-        move_ant(&Antony, 0.005);
+        for(int i=0; i<20; i++){
+            move_ant(&blue_ants[i], 0.003);
+            move_ant(&red_ants[i], 0.003);             
+        }
     }
     
     return;
@@ -77,6 +82,8 @@ void button_click(int button, int state,int x, int y){
         
         }else if(x > 60 && x<90 && y > 860 && y < 890){ // reset button
             if(DEBUG) cout << "RESET pressed"; // reset
+        }else if(x > 110&& x < 135&&y > 860&& y < 890){
+            simulate = !simulate; if(DEBUG) cout << "simulate pressed";
         }
     
         if(DEBUG) cout << '\n';
@@ -95,9 +102,13 @@ void timer(int){
 
 int main(int argc, char** argv){
     PLAY = false;
+    simulate = true;
+    
+    setColor(color, BLUE);
+    blue_ants = create_swarm(-0.5, -0.5, color, 1, 20);
+    setColor(color, RED);
+    red_ants = create_swarm(0.5, 0.5, color, 0, 20);
 
-    setColor(color, BLACK); 
-    Antony = create_ant(0, 0, color);
   
     //----- Create Window -----//
     glutInit(&argc, argv);
