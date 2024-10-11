@@ -1,3 +1,9 @@
+/*
+ TCC - Coevolucao entre duas Especies de Formigas Artificiais Competindo por Recursos
+ Author - Luca Gomes Urssi
+ Advisor - Eduardo do Valle Simoes
+*/
+
 #ifdef __APPLE__
     #include <GLUT/glut.h>
 #else
@@ -16,9 +22,10 @@ Ant create_ant(float x, float y, unsigned char *color, bool species){
     A.radius = 0.02;
     A.x = x;
     A.y = y;
-    A.theta = ((rand()%20)-10)/10.0; // moving direction
-    A.r = color[0];
-    A.g = color[1] + 50;
+    A.theta = ((rand()%628)-314)/100.0; // moving direction
+    A.initial_theta = A.theta;
+    A.r = color[0] ;
+    A.g = color[1] + 150; // change in color that make it easier to see the ants on the nest
     A.b = color[2];
     A.species = species;
 
@@ -38,7 +45,13 @@ void draw_ant(Ant ant){
 	return;
 }
 
-void move_ant(Ant *ant, float distance){
+// -1 - 1 to 0-900
+int convert_range2(float x){
+    return (x+1)*450;
+}
+
+
+void move_ant(Ant *ant, float distance, unsigned char pheromones[900][900][3]){
 	
 	ant->theta+= ((rand()%11)-5)/100.0 ; // update theta
 
@@ -51,10 +64,22 @@ void move_ant(Ant *ant, float distance){
 	ant->y = ant->y>1 ? -1 : ant->y;
 	ant->x = ant->x<-1 ? 1 : ant->x;
 	ant->y = ant->y<-1 ? 1 : ant->y;
+    
+    int x = convert_range2(ant->x), y = convert_range2(ant->y);
+    if(x > 899) x=899;
+    else if(x < 0) x=0;
+    
+    if(y > 899) y=899;
+    else if(y < 0) y=0;
 
+    if(pheromones[x][y][2]+25 > 255)
+        pheromones[x][y][2] = 255;
+    else     
+        pheromones[x][y][2] += 25;
+    
 }
 
-std::vector<Ant> create_swarm(float x, float y, unsigned char*color, bool species, int amount){
+std::vector<Ant> create_colony(float x, float y, unsigned char*color, bool species, int amount){
     std::vector<Ant> Ants;    
     Ant A;    
     for(int i=0; i<amount; i++){
@@ -65,7 +90,14 @@ std::vector<Ant> create_swarm(float x, float y, unsigned char*color, bool specie
     return Ants;
 }
 
-
+std::vector<Ant> reset_colony(std::vector<Ant> colony, int size, float x, float y){
+    for(int i=0; i<size; i++){
+        colony[i].theta = colony[i].initial_theta;
+        colony[i].x = x;
+        colony[i].y = y;
+    }
+    return colony;
+}
 
 
 

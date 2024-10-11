@@ -1,3 +1,9 @@
+/*
+ TCC - Coevolucao entre duas Especies de Formigas Artificiais Competindo por Recursos
+ Author - Luca Gomes Urssi
+ Advisor - Eduardo do Valle Simoes
+*/
+
 #ifdef __APPLE__
     #include <GLUT/glut.h>
 #else
@@ -119,7 +125,32 @@ void draw_nest(float x, float y, unsigned char*color){
     retangle(x, y, 0.2, 0.2, color);
 }
 
+// converts from range 0-900 to range -1 - 1
+float convert_range(int x){
+    return (x/450.0)-1;
+}
 
+// doesn't work if the screen change it's size 
+void draw_pheromones(unsigned char b_phero[900][900][3], unsigned char r_phero[900][900][3], bool draw_blue, bool draw_red){
+    unsigned char color[3];    
+    
+
+    for(int i=0; i<900; i++)
+        for(int j=0; j<900; j++){
+            
+            if(draw_blue && !(b_phero[i][j][0] == 0 && b_phero[i][j][1] == 0 && b_phero[i][j][2] == 0 ) ){
+                
+                setColor(color, b_phero[i][j][0],b_phero[i][j][1],b_phero[i][j][2]);
+                retangle( convert_range(i), convert_range(j), 0.003, 0.003, color); 
+            }   
+            if(draw_red && !(r_phero[i][j][0] == 0 && r_phero[i][j][1] == 0 && r_phero[i][j][2] == 0 ) ){
+                setColor(color, r_phero[i][j][0],r_phero[i][j][1],r_phero[i][j][2]);
+                retangle( convert_range(i), convert_range(j), 0.003, 0.003, color); 
+            }        
+        }
+
+    return;
+}
 
 
 

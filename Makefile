@@ -9,6 +9,9 @@ all:
 run:
 	./app $(ARGS)
 
+valgrind:
+	valgrind --leak-check=yes ./app $(ARGS) 
+
 .PHONY: clean
 clean:
 	rm -f app

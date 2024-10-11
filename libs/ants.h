@@ -1,9 +1,15 @@
+/*
+ TCC - Coevolucao entre duas Especies de Formigas Artificiais Competindo por Recursos
+ Author - Luca Gomes Urssi
+ Advisor - Eduardo do Valle Simoes
+*/
+
 #include <vector>
 
 #ifndef ANTS
 #define ANTS
 typedef struct _ant{
-    float radius, x, y, theta;
+    float radius, x, y, theta, initial_theta;
     unsigned char r,g,b;
     bool species;
 }Ant;
@@ -11,7 +17,10 @@ typedef struct _ant{
 
 
 Ant create_ant(float x, float y, unsigned char *color, bool species);
+
 void draw_ant(Ant ant);
-void move_ant(Ant *ant, float distance);
-std::vector<Ant> create_swarm(float x, float y, unsigned char*color, bool species, int amount);
+void move_ant(Ant *ant, float distance, unsigned char pheromones[900][900][3]);
+
+std::vector<Ant> create_colony(float x, float y, unsigned char*color, bool species, int amount);
+std::vector<Ant> reset_colony(std::vector<Ant> colony, int size, float x, float y);
 
