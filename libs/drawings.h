@@ -29,7 +29,7 @@ void circle(float x, float y, float radius, unsigned char*color);
 void RenderString(float x, float y, std::string string);
 
 // this function draws the background and bottom menu
-void draw_bottom_menu(bool PLAY, bool simulate);
+void draw_bottom_menu(bool PLAY, bool Graphics, bool b_phero, bool r_phero);
 
 // this function draws a colored square on the x,y position
 // to do: make the nest look better

@@ -50,7 +50,6 @@ int convert_range2(float x){
     return (x+1)*450;
 }
 
-#include <iostream>
 void move_ant(Ant *ant, float distance, unsigned char pheromones[900][900][3]){
 	
 	ant->theta+= ((rand()%11)-5)/100.0 ; // update theta
@@ -85,6 +84,7 @@ void move_ant(Ant *ant, float distance, unsigned char pheromones[900][900][3]){
         ant->theta = -ant->theta;
     }
     
+    // coordinates for pheromone handler
     int x = convert_range2(ant->x), y = convert_range2(ant->y);
     if(x > 899) x=899;
     else if(x < 0) x=0;
@@ -95,7 +95,7 @@ void move_ant(Ant *ant, float distance, unsigned char pheromones[900][900][3]){
     if(pheromones[x][y][2]+50 > 255)
         pheromones[x][y][2] = 255;
     else     
-        pheromones[x][y][2] += 25;
+        pheromones[x][y][2] += 50;
     
 }
 

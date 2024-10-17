@@ -90,7 +90,7 @@ void check_box(float x, float y, bool state, string name){
 
 }
 
-void draw_bottom_menu(bool PLAY, bool Graphics){
+void draw_bottom_menu(bool PLAY, bool Graphics, bool b_phero, bool r_phero){
 	unsigned char color[3];
 	
 	// draw a light_grey line in the bottom of the screen
@@ -117,6 +117,8 @@ void draw_bottom_menu(bool PLAY, bool Graphics){
 
     check_box(-0.73, -0.95, Graphics, "Graphics");
 
+    check_box(-0.4, -0.95, b_phero, "Blue Pheromones");
+    check_box(0.1, -0.95, r_phero, "Red Pheromones");
 	
 }
 
@@ -136,11 +138,34 @@ float convert_range(int x){
 void draw_pheromones(unsigned char b_phero[900][900][3], unsigned char r_phero[900][900][3], bool draw_blue, bool draw_red){
     unsigned char color[3];    
     
-
+    unsigned char r,g,b;
+    
     for(int i=0; i<900; i++)
         for(int j=0; j<900; j++){
+            r=0; g=0; b=0;            
+            if(draw_blue){ // draw blue pheromone
+                r = b_phero[i][j][0];
+                g = b_phero[i][j][1];
+                b = b_phero[i][j][2];
+                if(draw_red){ // blue & red
+                    r = (r + r_phero[i][j][2] > 255) ? (255) : (r + r_phero[i][j][2]);
+                    g = (g + r_phero[i][j][1] > 255) ? (255) : (g + r_phero[i][j][1]);
+                    b = (b + r_phero[i][j][0] > 255) ? (255) : (b + r_phero[i][j][0]);                
+                }           
+            }
+            else if(draw_red){ // draw red but not blue
+                r = r_phero[i][j][2];
+                g = r_phero[i][j][1];
+                b = r_phero[i][j][0];
+            }                
+
+            if(!(r==0 && g==0 && b==0)){
+                    setColor(color, r,g,b);
+                    retangle( convert_range(i), convert_range(j), 0.003, 0.003, color);// draw pixel 
+                } 
             
-            if(draw_blue && !(b_phero[i][j][0] == 0 && b_phero[i][j][1] == 0 && b_phero[i][j][2] == 0 ) ){
+            /*
+            if(draw_blue && !(r == 0 && b_phero[i][j][1] == 0 && b_phero[i][j][2] == 0 ) ){
                 
                 setColor(color, b_phero[i][j][0],b_phero[i][j][1],b_phero[i][j][2]);
                 retangle( convert_range(i), convert_range(j), 0.003, 0.003, color); 
@@ -148,7 +173,7 @@ void draw_pheromones(unsigned char b_phero[900][900][3], unsigned char r_phero[9
             if(draw_red && !(r_phero[i][j][0] == 0 && r_phero[i][j][1] == 0 && r_phero[i][j][2] == 0 ) ){
                 setColor(color, r_phero[i][j][0],r_phero[i][j][1],r_phero[i][j][2]);
                 retangle( convert_range(i), convert_range(j), 0.003, 0.003, color); 
-            }        
+            }    */    
         }
 
     return;

@@ -24,7 +24,21 @@ using namespace std;
 #define COLONY_SIZE 100
 
 unsigned char color[3];
-bool PLAY, Graphics;
+bool PLAY, Graphics, b_phero, r_phero;
+
+
+/*
+    TO DO list:
+    - draw pheromenos option on menu for each colony
+    - ant vision
+    - spawn food
+    - ant behaviour
+    - soldier ant
+    - set evolution vars
+    - create evolution make command
+*/
+
+
 
 /*  3 types of pheromones; intruder, food & path. 
     ants look for food with 'path' pheromone.
@@ -51,7 +65,7 @@ void interface(){
         draw_nest(-0.5, -0.5, BLUE);
         draw_nest( 0.5, 0.5, RED);
         
-        draw_pheromones(blue_pheromones, red_pheromones, true, true);
+        draw_pheromones(blue_pheromones, red_pheromones, b_phero, r_phero);
         
             
         //draw_ant(Antony);
@@ -62,7 +76,7 @@ void interface(){
         }
     }
     
-    draw_bottom_menu(PLAY, Graphics); // menu
+    draw_bottom_menu(PLAY, Graphics,  b_phero, r_phero); // menu
     
     glutSwapBuffers();	
     return;
@@ -116,6 +130,10 @@ void button_click(int button, int state,int x, int y){
             
         }else if(x > 110&& x < 135&&y > 860&& y < 890){
             Graphics = !Graphics; if(DEBUG) cout << " - Graphics pressed";
+        }else if(x > 255&& x < 285&&y > 860&& y < 890){
+            b_phero = !b_phero; if(DEBUG) cout << " - Blue pheromones pressed";
+        }else if(x > 480&& x < 510&&y > 860&& y < 890){
+            r_phero = !r_phero; if(DEBUG) cout << " - Red pheromones pressed";
         }
     
         if(DEBUG) cout<<'\n';
@@ -138,6 +156,8 @@ void timer(int){
 int main(int argc, char** argv){
     PLAY = false;
     Graphics = true;
+    b_phero = false;
+    r_phero = false;
 
     if(DEBUG) cout << "DEBUG mode is ON.\n";
 
