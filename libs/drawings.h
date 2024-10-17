@@ -33,6 +33,6 @@ void draw_bottom_menu(bool PLAY, bool simulate);
 
 // this function draws a colored square on the x,y position
 // to do: make the nest look better
-void draw_nest(float x, float y, unsigned char*color);
+void draw_nest(float x, float y, unsigned char R, unsigned char G, unsigned char B);
 
 void draw_pheromones(unsigned char b_phero[900][900][3], unsigned char r_phero[900][900][3], bool draw_blue, bool draw_red);

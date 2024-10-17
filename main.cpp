@@ -24,7 +24,7 @@ using namespace std;
 #define COLONY_SIZE 100
 
 unsigned char color[3];
-bool PLAY, simulate;
+bool PLAY, Graphics;
 
 /*  3 types of pheromones; intruder, food & path. 
     ants look for food with 'path' pheromone.
@@ -47,24 +47,22 @@ void interface(){
     setColor(color, BLACK); 
     retangle(0, 0, 2, 2, color); // background
 
-
-    setColor(color, BLUE);
-    draw_nest(-0.5, -0.5, color);
-    setColor(color, RED);
-    draw_nest( 0.5, 0.5, color);
-    
-    draw_pheromones(blue_pheromones, red_pheromones, true, true);
-    
+    if(Graphics){
+        draw_nest(-0.5, -0.5, BLUE);
+        draw_nest( 0.5, 0.5, RED);
         
-    //draw_ant(Antony);
+        draw_pheromones(blue_pheromones, red_pheromones, true, true);
+        
+            
+        //draw_ant(Antony);
 
-    for(int i=0; i<COLONY_SIZE; i++){
-        draw_ant(blue_ants[i]);
-        draw_ant(red_ants[i]);             
+        for(int i=0; i<COLONY_SIZE; i++){
+            draw_ant(blue_ants[i]);
+            draw_ant(red_ants[i]);             
+        }
     }
-
     
-    draw_bottom_menu(PLAY, simulate); // menu
+    draw_bottom_menu(PLAY, Graphics); // menu
     
     glutSwapBuffers();	
     return;
@@ -117,7 +115,7 @@ void button_click(int button, int state,int x, int y){
                     }
             
         }else if(x > 110&& x < 135&&y > 860&& y < 890){
-            simulate = !simulate; if(DEBUG) cout << " - simulate pressed";
+            Graphics = !Graphics; if(DEBUG) cout << " - Graphics pressed";
         }
     
         if(DEBUG) cout<<'\n';
@@ -139,7 +137,7 @@ void timer(int){
 
 int main(int argc, char** argv){
     PLAY = false;
-    simulate = true;
+    Graphics = true;
 
     if(DEBUG) cout << "DEBUG mode is ON.\n";
 

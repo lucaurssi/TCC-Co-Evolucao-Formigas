@@ -90,7 +90,7 @@ void check_box(float x, float y, bool state, string name){
 
 }
 
-void draw_bottom_menu(bool PLAY, bool simulate){
+void draw_bottom_menu(bool PLAY, bool Graphics){
 	unsigned char color[3];
 	
 	// draw a light_grey line in the bottom of the screen
@@ -115,13 +115,15 @@ void draw_bottom_menu(bool PLAY, bool simulate){
     setColor(color, RED);
 	retangle(-0.83, -0.95, 0.05, 0.05, color); 
 
-    check_box(-0.73, -0.95, simulate, "Simulation");
+    check_box(-0.73, -0.95, Graphics, "Graphics");
 
 	
 }
 
 
-void draw_nest(float x, float y, unsigned char*color){
+void draw_nest(float x, float y, unsigned char R, unsigned char G, unsigned char B){
+    unsigned char color[3];
+    setColor(color, R, G, B);
     retangle(x, y, 0.2, 0.2, color);
 }
 
