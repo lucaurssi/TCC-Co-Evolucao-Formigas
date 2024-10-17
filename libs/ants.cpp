@@ -50,20 +50,40 @@ int convert_range2(float x){
     return (x+1)*450;
 }
 
-
+#include <iostream>
 void move_ant(Ant *ant, float distance, unsigned char pheromones[900][900][3]){
 	
 	ant->theta+= ((rand()%11)-5)/100.0 ; // update theta
+    
+    // this keeps theta value between -3.14 and 3.14, which is the used directions in our functions
+    if(ant->theta > 3.14) ant->theta = ant->theta - 6.28;
+    if(ant->theta < -3.14) ant->theta = ant->theta + 6.28;
 
 	// move towards theta
 	ant->x = ant->x + distance*cos(ant->theta);
 	ant->y = ant->y + distance*sin(ant->theta);
 
 	// end of screen
-	ant->x = ant->x>1 ? -1 : ant->x;
-	ant->y = ant->y>1 ? -1 : ant->y;
-	ant->x = ant->x<-1 ? 1 : ant->x;
-	ant->y = ant->y<-1 ? 1 : ant->y;
+    if(ant->x > 1){ // top wall /\        /
+        ant->x = 1;
+        if(ant->theta >0) ant->theta = ant->theta + 1.57;
+        else if(ant->theta <0) ant->theta = ant->theta - 1.57;
+        else ant->theta = 3.14;
+    
+    }else if(ant->x < -1){ // bottom wall \/
+        ant->x = -1;
+        if(ant->theta >0) ant->theta = ant->theta - 1.57;
+        else if(ant->theta <0) ant->theta = ant->theta + 1.57;
+        else ant->theta = 0;
+    }
+	if(ant->y > 1){ // right wall  -->
+        ant->y = 1;
+        ant->theta = -ant->theta;
+    
+    }else if(ant->y < -1){ // left wall <--
+        ant->y = -1;
+        ant->theta = -ant->theta;
+    }
     
     int x = convert_range2(ant->x), y = convert_range2(ant->y);
     if(x > 899) x=899;
