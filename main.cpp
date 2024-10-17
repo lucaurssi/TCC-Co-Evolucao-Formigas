@@ -26,8 +26,8 @@ using namespace std;
 unsigned char color[3];
 bool PLAY, simulate;
 
-/*  3 types of pheromones; exploration, food & intruder. 
-    ants look for food with 'exploration' pheromone.
+/*  3 types of pheromones; intruder, food & path. 
+    ants look for food with 'path' pheromone.
     when food is found they follow the path back to the nest while releasing 'food' pheromone.
     at any point, if a hostile being is sighted the ant start releasing 'intruder' pheromone and goes home.
 
@@ -53,12 +53,8 @@ void interface(){
     setColor(color, RED);
     draw_nest( 0.5, 0.5, color);
     
-    try{
-    draw_pheromones(blue_pheromones, red_pheromones, true, false);
-    }
-    catch(int er){
-        cout << "something fucky happened "<< er <<'\n';    
-    }
+    draw_pheromones(blue_pheromones, red_pheromones, true, true);
+    
         
     //draw_ant(Antony);
 

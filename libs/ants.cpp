@@ -19,7 +19,7 @@
 Ant create_ant(float x, float y, unsigned char *color, bool species){
     Ant A;  
 
-    A.radius = 0.02;
+    A.radius = 0.01;
     A.x = x;
     A.y = y;
     A.theta = ((rand()%628)-314)/100.0; // moving direction
@@ -72,7 +72,7 @@ void move_ant(Ant *ant, float distance, unsigned char pheromones[900][900][3]){
     if(y > 899) y=899;
     else if(y < 0) y=0;
 
-    if(pheromones[x][y][2]+25 > 255)
+    if(pheromones[x][y][2]+50 > 255)
         pheromones[x][y][2] = 255;
     else     
         pheromones[x][y][2] += 25;
