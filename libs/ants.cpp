@@ -47,20 +47,35 @@ void draw_ant(Ant ant){
 
 // -1 - 1 to 0-900
 int convert_range2(float x){
-    return (x+1)*450;
+    int output = (x+1)*450; 
+    if(output > 899) output=899;
+    else if(output < 0) output=0;
+
+    return output;
 }
 
-void move_ant(Ant *ant, float distance, unsigned char pheromones[900][900][3]){
-	
+void move_ant(Ant *ant, float distance, unsigned char pheromones[900][900][3], bool ant_pos[900][900]){
+    int x,y;	
+    
 	ant->theta+= ((rand()%11)-5)/100.0 ; // update theta
     
     // this keeps theta value between -3.14 and 3.14, which is the used directions in our functions
     if(ant->theta > 3.14) ant->theta = ant->theta - 6.28;
     if(ant->theta < -3.14) ant->theta = ant->theta + 6.28;
-
+    
+    // remove ant from previous location
+    x = convert_range2(ant->x);
+    y = convert_range2(ant->y);
+    ant_pos[x][y] = false; // location for ant vision
+    
 	// move towards theta
 	ant->x = ant->x + distance*cos(ant->theta);
 	ant->y = ant->y + distance*sin(ant->theta);
+
+    // add ant to new location
+    x = convert_range2(ant->x);
+    y = convert_range2(ant->y);
+    ant_pos[x][y] = true; 
 
 	// end of screen
     if(ant->x > 1){ // top wall /\        /
@@ -84,19 +99,28 @@ void move_ant(Ant *ant, float distance, unsigned char pheromones[900][900][3]){
         ant->theta = -ant->theta;
     }
     
-    // coordinates for pheromone handler
-    int x = convert_range2(ant->x), y = convert_range2(ant->y);
-    if(x > 899) x=899;
-    else if(x < 0) x=0;
-    
-    if(y > 899) y=899;
-    else if(y < 0) y=0;
-
+    // add color to pheromone on the ant location
     if(pheromones[x][y][2]+50 > 255)
         pheromones[x][y][2] = 255;
     else     
         pheromones[x][y][2] += 50;
     
+}
+
+#include <iostream>
+
+void update_pheromones(unsigned char phero[900][900][3], unsigned short int * decay_timer, unsigned short int decay_timer_max){
+    
+    *decay_timer -= 1;
+    std::cout << *decay_timer<<'\n';
+    if(*decay_timer > 0) return; // not ready to decay
+    
+    *decay_timer = decay_timer_max;
+    
+    for(int i=0; i<900; i++)
+        for(int j=0; j<900; j++)
+            for(int k=0; k<3; k++)
+                if(phero[i][j][k] > 0)phero[i][j][k] -= 1;
 }
 
 std::vector<Ant> create_colony(float x, float y, unsigned char*color, bool species, int amount){
@@ -119,6 +143,12 @@ std::vector<Ant> reset_colony(std::vector<Ant> colony, int size, float x, float 
     return colony;
 }
 
+
+/*
+void ant_behaviour(Ant ant, unsigned char pheromones[900][900][3], bool ant_pos[900][900]){
+    
+}
+*/
 
 
 

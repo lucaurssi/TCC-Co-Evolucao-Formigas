@@ -163,17 +163,6 @@ void draw_pheromones(unsigned char b_phero[900][900][3], unsigned char r_phero[9
                     setColor(color, r,g,b);
                     retangle( convert_range(i), convert_range(j), 0.003, 0.003, color);// draw pixel 
                 } 
-            
-            /*
-            if(draw_blue && !(r == 0 && b_phero[i][j][1] == 0 && b_phero[i][j][2] == 0 ) ){
-                
-                setColor(color, b_phero[i][j][0],b_phero[i][j][1],b_phero[i][j][2]);
-                retangle( convert_range(i), convert_range(j), 0.003, 0.003, color); 
-            }   
-            if(draw_red && !(r_phero[i][j][0] == 0 && r_phero[i][j][1] == 0 && r_phero[i][j][2] == 0 ) ){
-                setColor(color, r_phero[i][j][0],r_phero[i][j][1],r_phero[i][j][2]);
-                retangle( convert_range(i), convert_range(j), 0.003, 0.003, color); 
-            }    */    
         }
 
     return;

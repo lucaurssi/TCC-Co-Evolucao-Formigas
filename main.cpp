@@ -23,13 +23,8 @@ using namespace std;
 #define DEBUG 1
 #define COLONY_SIZE 100
 
-unsigned char color[3];
-bool PLAY, Graphics, b_phero, r_phero;
-
-
 /*
     TO DO list:
-    - draw pheromenos option on menu for each colony
     - ant vision
     - spawn food
     - ant behaviour
@@ -38,7 +33,8 @@ bool PLAY, Graphics, b_phero, r_phero;
     - create evolution make command
 */
 
-
+unsigned char color[3];
+bool PLAY, Graphics, b_phero, r_phero;
 
 /*  3 types of pheromones; intruder, food & path. 
     ants look for food with 'path' pheromone.
@@ -50,10 +46,13 @@ bool PLAY, Graphics, b_phero, r_phero;
 unsigned char blue_pheromones[windowWidth][windowHeight][3];
 unsigned char red_pheromones[windowWidth][windowHeight][3];
 
+bool blue_ant_position[windowWidth][windowHeight];
+bool red_ant_position[windowWidth][windowHeight];
+
 //Ant Antony; // Antony is the ant that helped debugging this code.
 vector<Ant> blue_ants, red_ants;
 
-
+unsigned short int blue_decay_timer, blue_decay_timer_max;
 
 void interface(){
     unsigned char color[3];
@@ -96,10 +95,14 @@ void processInterface(){
     if(PLAY){
         //move_ant(&Antony, 0.003);
         
+        update_pheromones(blue_pheromones, &blue_decay_timer, blue_decay_timer_max);
+    
+            
         for(int i=0; i<COLONY_SIZE; i++){
-            move_ant(&blue_ants[i], 0.003, blue_pheromones);
-            move_ant(&red_ants[i], 0.003, red_pheromones);             
+            move_ant(&blue_ants[i], 0.003, blue_pheromones, blue_ant_position);
+            move_ant(&red_ants[i], 0.003, red_pheromones, red_ant_position);             
         }
+        
     }
     
     return;
@@ -158,16 +161,21 @@ int main(int argc, char** argv){
     Graphics = true;
     b_phero = false;
     r_phero = false;
+    blue_decay_timer_max = 5;
+    blue_decay_timer = blue_decay_timer_max;
 
     if(DEBUG) cout << "DEBUG mode is ON.\n";
 
     // setting pheromones to zero on the entire map
     for(int i=0; i<windowWidth; i++)
-        for(int j=0; j<windowHeight; j++)
+        for(int j=0; j<windowHeight; j++){
+            blue_ant_position[i][j] = false;
+            red_ant_position[i][j] = false;
             for(int k=0; k<3; k++){
                 blue_pheromones[i][j][k]=0;            
                 red_pheromones[i][j][k]=0;
             }
+        }
     
     //setColor(color, BLACK);
     //Antony = create_ant(0,0,color, 1);
