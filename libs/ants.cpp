@@ -107,12 +107,10 @@ void move_ant(Ant *ant, float distance, unsigned char pheromones[900][900][3], b
     
 }
 
-#include <iostream>
 
-void update_pheromones(unsigned char phero[900][900][3], unsigned short int * decay_timer, unsigned short int decay_timer_max){
+void update_pheromones(unsigned char phero[900][900][3], unsigned short int * decay_timer, unsigned short int decay_timer_max, unsigned char decay_amount){
     
     *decay_timer -= 1;
-    std::cout << *decay_timer<<'\n';
     if(*decay_timer > 0) return; // not ready to decay
     
     *decay_timer = decay_timer_max;
@@ -120,29 +118,62 @@ void update_pheromones(unsigned char phero[900][900][3], unsigned short int * de
     for(int i=0; i<900; i++)
         for(int j=0; j<900; j++)
             for(int k=0; k<3; k++)
-                if(phero[i][j][k] > 0)phero[i][j][k] -= 1;
+                if(phero[i][j][k] > 0)phero[i][j][k] -= decay_amount;
 }
 
-std::vector<Ant> create_colony(float x, float y, unsigned char*color, bool species, int amount){
-    std::vector<Ant> Ants;    
+Colony create_colony(float x, float y, unsigned char*color, bool species, int amount){
+    Colony swarm;
     Ant A;    
-    for(int i=0; i<amount; i++){
+    for(int i=0; i<amount; i++){ // creates the ants of the colony 
         A = create_ant(x, y, color, species);
-        Ants.push_back(A); 
+        swarm.ants.push_back(A); 
     }
 
-    return Ants;
+    for(int i=0; i<900; i++)
+        for(int j=0; j<900; j++){
+            swarm.ant_position[i][j] = false; // map is empty of ants
+            for(int k=0; k<3; k++){
+                swarm.pheromones[i][j][k]=0; // map is clear of pheromones
+            }
+        }
+    
+    swarm.draw_phero = false; // this option is off by default
+    swarm.decay_timer_max = 5; // timer to reduce the pheromones on the map
+    swarm.decay_timer = swarm.decay_timer_max;
+    swarm.decay_amount = 1; // amount of pheromones reduced per cicle
+
+    swarm.nest_x=x;
+    swarm.nest_y=y;
+    swarm.ants_amount = amount;
+
+    return swarm;
 }
 
-std::vector<Ant> reset_colony(std::vector<Ant> colony, int size, float x, float y){
-    for(int i=0; i<size; i++){
-        colony[i].theta = colony[i].initial_theta;
-        colony[i].x = x;
-        colony[i].y = y;
+void reset_colony(Colony *colony){
+    for(int i=0; i<colony->ants_amount; i++){
+        colony->ants[i].theta = colony->ants[i].initial_theta;
+        colony->ants[i].x = colony->nest_x;
+        colony->ants[i].y = colony->nest_y;
     }
-    return colony;
+
+    for(int i=0; i<900; i++)
+        for(int j=0; j<900; j++){
+            colony->ant_position[i][j] = false; // map is empty of ants
+            for(int k=0; k<3; k++){
+                colony->pheromones[i][j][k]=0; // map is clear of pheromones
+            }
+        }
+    
+    return;
 }
 
+void process_colony(Colony *colony){
+    update_pheromones(colony->pheromones, &colony->decay_timer, colony->decay_timer_max, colony->decay_amount);
+        
+    for(int i=0; i<colony->ants_amount; i++)
+        move_ant(&colony->ants[i], 0.003, colony->pheromones, colony->ant_position);
+     
+}
 
 /*
 void ant_behaviour(Ant ant, unsigned char pheromones[900][900][3], bool ant_pos[900][900]){

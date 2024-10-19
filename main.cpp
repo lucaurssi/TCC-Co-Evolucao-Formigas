@@ -34,25 +34,11 @@ using namespace std;
 */
 
 unsigned char color[3];
-bool PLAY, Graphics, b_phero, r_phero;
+bool PLAY, Graphics;
 
-/*  3 types of pheromones; intruder, food & path. 
-    ants look for food with 'path' pheromone.
-    when food is found they follow the path back to the nest while releasing 'food' pheromone.
-    at any point, if a hostile being is sighted the ant start releasing 'intruder' pheromone and goes home.
 
-    there are two colonies and it was choosen that the ants don't share pheromones.
-*/
-unsigned char blue_pheromones[windowWidth][windowHeight][3];
-unsigned char red_pheromones[windowWidth][windowHeight][3];
+Colony blue_ants, red_ants;
 
-bool blue_ant_position[windowWidth][windowHeight];
-bool red_ant_position[windowWidth][windowHeight];
-
-//Ant Antony; // Antony is the ant that helped debugging this code.
-vector<Ant> blue_ants, red_ants;
-
-unsigned short int blue_decay_timer, blue_decay_timer_max;
 
 void interface(){
     unsigned char color[3];
@@ -61,21 +47,19 @@ void interface(){
     retangle(0, 0, 2, 2, color); // background
 
     if(Graphics){
+        
+        draw_pheromones(blue_ants.pheromones, red_ants.pheromones, blue_ants.draw_phero, red_ants.draw_phero);
+
         draw_nest(-0.5, -0.5, BLUE);
         draw_nest( 0.5, 0.5, RED);
-        
-        draw_pheromones(blue_pheromones, red_pheromones, b_phero, r_phero);
-        
-            
-        //draw_ant(Antony);
 
         for(int i=0; i<COLONY_SIZE; i++){
-            draw_ant(blue_ants[i]);
-            draw_ant(red_ants[i]);             
+            draw_ant(blue_ants.ants[i]);
+            draw_ant(red_ants.ants[i]);             
         }
     }
     
-    draw_bottom_menu(PLAY, Graphics,  b_phero, r_phero); // menu
+    draw_bottom_menu(PLAY, Graphics,  blue_ants.draw_phero, red_ants.draw_phero); // menu
     
     glutSwapBuffers();	
     return;
@@ -84,25 +68,17 @@ void interface(){
 
 void processInterface(){
     // checks for changes in window size and reset it
-    // does not change fullscreen
+    // does not change fullscreen [ TODO: detect and close fullscreen ]
     int w = glutGet(GLUT_WINDOW_WIDTH); 
     int h = glutGet(GLUT_WINDOW_HEIGHT);
-    if(w!=windowWidth || h!=windowHeight){
+    if(w!=900 || h!=900){
         if(DEBUG)cout << "Screen size diferent, resizing: "<< w << ' ' << h << '\n';
-        glutReshapeWindow(windowWidth, windowHeight);
+        glutReshapeWindow(900, 900);
     }
     
-    if(PLAY){
-        //move_ant(&Antony, 0.003);
-        
-        update_pheromones(blue_pheromones, &blue_decay_timer, blue_decay_timer_max);
-    
-            
-        for(int i=0; i<COLONY_SIZE; i++){
-            move_ant(&blue_ants[i], 0.003, blue_pheromones, blue_ant_position);
-            move_ant(&red_ants[i], 0.003, red_pheromones, red_ant_position);             
-        }
-        
+    if(PLAY){        
+        process_colony(&blue_ants);
+        process_colony(&red_ants);
     }
     
     return;
@@ -121,22 +97,22 @@ void button_click(int button, int state,int x, int y){
             if(DEBUG) cout << " - RESET pressed";
             PLAY = false;
 
-            blue_ants = reset_colony(blue_ants, COLONY_SIZE, -0.5, -0.5);
-            red_ants = reset_colony(red_ants, COLONY_SIZE, 0.5, 0.5);
+            reset_colony(&blue_ants);
+            reset_colony(&red_ants);
 
-            for(int i=0; i<windowWidth; i++)
-                for(int j=0; j<windowHeight; j++)
+            for(int i=0; i<900; i++)
+                for(int j=0; j<900; j++)
                     for(int k=0; k<3; k++){
-                        blue_pheromones[i][j][k]=0;            
-                        red_pheromones[i][j][k]=0;
+                        blue_ants.pheromones[i][j][k]=0;            
+                        red_ants.pheromones[i][j][k]=0;
                     }
             
         }else if(x > 110&& x < 135&&y > 860&& y < 890){
             Graphics = !Graphics; if(DEBUG) cout << " - Graphics pressed";
         }else if(x > 255&& x < 285&&y > 860&& y < 890){
-            b_phero = !b_phero; if(DEBUG) cout << " - Blue pheromones pressed";
+            blue_ants.draw_phero = !blue_ants.draw_phero; if(DEBUG) cout << " - Blue pheromones pressed";
         }else if(x > 480&& x < 510&&y > 860&& y < 890){
-            r_phero = !r_phero; if(DEBUG) cout << " - Red pheromones pressed";
+            red_ants.draw_phero = !red_ants.draw_phero; if(DEBUG) cout << " - Red pheromones pressed";
         }
     
         if(DEBUG) cout<<'\n';
@@ -157,31 +133,16 @@ void timer(int){
 
 
 int main(int argc, char** argv){
-    PLAY = false;
-    Graphics = true;
-    b_phero = false;
-    r_phero = false;
-    blue_decay_timer_max = 5;
-    blue_decay_timer = blue_decay_timer_max;
-
+    
     if(DEBUG) cout << "DEBUG mode is ON.\n";
 
-    // setting pheromones to zero on the entire map
-    for(int i=0; i<windowWidth; i++)
-        for(int j=0; j<windowHeight; j++){
-            blue_ant_position[i][j] = false;
-            red_ant_position[i][j] = false;
-            for(int k=0; k<3; k++){
-                blue_pheromones[i][j][k]=0;            
-                red_pheromones[i][j][k]=0;
-            }
-        }
+    PLAY = false; // the simulation is paused by default
+    Graphics = true; // visual simulation
     
-    //setColor(color, BLACK);
-    //Antony = create_ant(0,0,color, 1);
-    
+    // --- creating ant colony --- //
     setColor(color, BLUE);
     blue_ants = create_colony(-0.5, -0.5, color, 1, COLONY_SIZE);
+
     setColor(color, RED);
     red_ants = create_colony(0.5, 0.5, color, 0, COLONY_SIZE);
 
