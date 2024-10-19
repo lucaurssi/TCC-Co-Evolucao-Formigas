@@ -59,7 +59,7 @@ void interface(){
         }
     }
     
-    draw_bottom_menu(PLAY, Graphics,  blue_ants.draw_phero, red_ants.draw_phero); // menu
+    draw_bottom_menu(PLAY, Graphics,  blue_ants.draw_phero, red_ants.draw_phero);
     
     glutSwapBuffers();	
     return;
@@ -95,22 +95,17 @@ void button_click(int button, int state,int x, int y){
         
         }else if(x > 60 && x<90 && y > 860 && y < 890){ // reset button
             if(DEBUG) cout << " - RESET pressed";
+            
             PLAY = false;
-
             reset_colony(&blue_ants);
             reset_colony(&red_ants);
-
-            for(int i=0; i<900; i++)
-                for(int j=0; j<900; j++)
-                    for(int k=0; k<3; k++){
-                        blue_ants.pheromones[i][j][k]=0;            
-                        red_ants.pheromones[i][j][k]=0;
-                    }
             
         }else if(x > 110&& x < 135&&y > 860&& y < 890){
             Graphics = !Graphics; if(DEBUG) cout << " - Graphics pressed";
+
         }else if(x > 255&& x < 285&&y > 860&& y < 890){
             blue_ants.draw_phero = !blue_ants.draw_phero; if(DEBUG) cout << " - Blue pheromones pressed";
+
         }else if(x > 480&& x < 510&&y > 860&& y < 890){
             red_ants.draw_phero = !red_ants.draw_phero; if(DEBUG) cout << " - Red pheromones pressed";
         }
@@ -123,11 +118,11 @@ void button_click(int button, int state,int x, int y){
 
 
 void timer(int){
-	processInterface(); // calculations
+	processInterface(); // calculate things every frame
 
-	glutPostRedisplay(); // redraw frame
+	glutPostRedisplay(); // call "interface" function again
 
-    glutTimerFunc(1000/30, timer, 0);
+    glutTimerFunc(1000/30, timer, 0); // call "timer" function again after 1000/30 miliseconds
 }
 
 
@@ -153,11 +148,13 @@ int main(int argc, char** argv){
     glutInitWindowSize(windowWidth, windowHeight);
     glutInitWindowPosition(100, 100);
     glutCreateWindow("TCC-Co-Evolucao-Formigas");
+
     glClearColor(1.0, 1.0, 1.0, 1.0);// clear screen
 
-    glutDisplayFunc(interface);// defining drawing function
+    glutDisplayFunc(interface);// defining drawing function as interface()
 
     glutTimerFunc(0, timer, 0); // clock, processing function here
+
 	glutMouseFunc(button_click);// mouse click handler
 
     glutMainLoop();
