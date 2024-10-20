@@ -77,8 +77,8 @@ void processInterface(){
     }
     
     if(PLAY){        
-        process_colony(&blue_ants);
-        process_colony(&red_ants);
+        process_colony(&blue_ants, red_ants.ant_position);
+        process_colony(&red_ants, blue_ants.ant_position);
     }
     
     return;
