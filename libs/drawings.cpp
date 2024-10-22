@@ -126,7 +126,7 @@ void draw_bottom_menu(bool PLAY, bool Graphics, bool b_phero, bool r_phero){
 void draw_nest(float x, float y, unsigned char R, unsigned char G, unsigned char B){
     unsigned char color[3];
     setColor(color, R, G, B);
-    retangle(x, y, 0.2, 0.2, color);
+    retangle(x, y, 0.18, 0.18, color);
 }
 
 // converts from range 0-900 to range -1 - 1
@@ -144,19 +144,19 @@ void draw_pheromones(unsigned char b_phero[900][900][3], unsigned char r_phero[9
         for(int j=0; j<900; j++){
             r=0; g=0; b=0;            
             if(draw_blue){ // draw blue pheromone
-                r = b_phero[i][j][0];
+                r = b_phero[i][j][2];
                 g = b_phero[i][j][1];
-                b = b_phero[i][j][2];
+                b = b_phero[i][j][0];
                 if(draw_red){ // blue & red
-                    r = (r + r_phero[i][j][2] > 255) ? (255) : (r + r_phero[i][j][2]);
+                    r = (r + r_phero[i][j][0] > 255) ? (255) : (r + r_phero[i][j][0]);
                     g = (g + r_phero[i][j][1] > 255) ? (255) : (g + r_phero[i][j][1]);
-                    b = (b + r_phero[i][j][0] > 255) ? (255) : (b + r_phero[i][j][0]);                
+                    b = (b + r_phero[i][j][2] > 255) ? (255) : (b + r_phero[i][j][2]);                
                 }           
             }
             else if(draw_red){ // draw red but not blue
-                r = r_phero[i][j][2];
+                r = r_phero[i][j][0];
                 g = r_phero[i][j][1];
-                b = r_phero[i][j][0];
+                b = r_phero[i][j][2];
             }                
 
             if(!(r==0 && g==0 && b==0)){

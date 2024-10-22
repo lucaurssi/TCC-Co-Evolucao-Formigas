@@ -15,7 +15,8 @@
 #include <math.h>
 #include <vector>
 
-
+bool food_map[900][900];
+    
 Ant create_ant(float x, float y, unsigned char *color, bool species){
     Ant A;  
 
@@ -28,8 +29,10 @@ Ant create_ant(float x, float y, unsigned char *color, bool species){
     A.g = color[1] + 150; // change in color that make it easier to see the ants on the nest
     A.b = color[2];
     A.species = species;
-    A.have_food = false;
+    A.found_food = false;
     A.intruder_detected = false;
+    A.home_sick = 250;
+    A.lost =0;
 
     return A; 
 }
@@ -60,8 +63,8 @@ void move_ant(Ant *ant, float distance, bool ant_pos[900][900]){
     int x,y;	
     
     // this keeps theta value between -3.14 and 3.14, which is the used directions in our functions
-    if(ant->theta > 3.14) ant->theta = ant->theta - 6.28;
-    if(ant->theta < -3.14) ant->theta = ant->theta + 6.28;
+    if(ant->theta > 3.1415) ant->theta = ant->theta - 6.283;
+    if(ant->theta < -3.1415) ant->theta = ant->theta + 6.283;
     
     // remove ant from previous location
     x = convert_range2(ant->x);
@@ -105,7 +108,28 @@ void move_ant(Ant *ant, float distance, bool ant_pos[900][900]){
 
 
 void update_pheromones(Colony * colony){
-    
+    int nest_x = convert_range2(colony->nest_x),
+        nest_y = convert_range2(colony->nest_y);
+
+    if(colony->pheromones[nest_x][nest_y][0] < 225){ // colony is always full phero
+        for(int i=nest_x-33; i<nest_x+33; i++)
+            for(int j=nest_y-33; j<nest_y+33; j++)
+                colony->pheromones[i][j][0] = 255;  
+        
+        for(int i=290; i<310; i++)
+            for(int j=440; j<460; j++)
+                colony->pheromones[i][j][1] = 255;
+
+        for(int i=440; i<460; i++)
+            for(int j=440; j<460; j++)
+                colony->pheromones[i][j][1] = 255;
+
+        for(int i=590; i<610; i++)
+            for(int j=440; j<460; j++)
+                colony->pheromones[i][j][1] = 255;
+    }              
+
+
     colony->decay_timer -= 1;
     if(colony->decay_timer > 0) return; // not ready to decay
     
@@ -134,7 +158,7 @@ Colony create_colony(float x, float y, unsigned char*color, bool species, int am
         }
     
     swarm.draw_phero = false; // this option is off by default
-    swarm.decay_timer_max = 10; // timer to reduce the pheromones on the map
+    swarm.decay_timer_max = 15; // timer to reduce the pheromones on the map
     swarm.decay_timer = swarm.decay_timer_max;
     swarm.decay_amount = 1; // amount of pheromones reduced per cicle
 
@@ -150,8 +174,9 @@ void reset_colony(Colony *colony){
         colony->ants[i].theta = colony->ants[i].initial_theta;
         colony->ants[i].x = colony->nest_x;
         colony->ants[i].y = colony->nest_y;
-        colony->ants[i].have_food = false;
+        colony->ants[i].found_food = false;
         colony->ants[i].intruder_detected = false;
+        colony->ants[i].home_sick = 250;
     }
 
     for(int i=0; i<900; i++)
@@ -166,7 +191,6 @@ void reset_colony(Colony *colony){
 
 
 bool search_for_enemies(int x, int y, bool enemy_location[900][900]){
-    
 
     if(x+2 < 900 && x-2>0 && y+2 < 900 && y-2>0) // not near borders
         for(int i=x-2; i<x+3; i++) 
@@ -176,95 +200,223 @@ bool search_for_enemies(int x, int y, bool enemy_location[900][900]){
     return false;
 }
 
-void follow_pheromone(int x, int y, float *theta, unsigned char pheromones[900][900][3], int type){
+void food_pocket(int x, int y){
+    for(int i=x-10; i<x+10; i++)
+        for(int j=y-10; j<y+10; j++)
+            food_map[i][j] = true;
+}
+
+void create_food_map(){
+    for(int i=0; i<900; i++) 
+        for(int j=0; j<900; j++) // check for enemy ant 2 pixels away
+            food_map[i][j] = false;
+    
+    food_pocket(450, 450);
+    food_pocket(300, 450);
+    food_pocket(600, 450);
+}
+
+bool check_food_nearby(int x, int y){
+    
+
+    if(x+2 < 900 && x-2>0 && y+2 < 900 && y-2>0) // not near borders
+        for(int i=x-2; i<x+3; i++) 
+            for(int j=y-2; j<y+3; j++) // check for food 2 pixels away
+                if(food_map[i][j])
+                    return true;
+    return false;
+}
+
+
+// this function changes the direction of the ant based on it's behaviour
+bool follow_pheromone(int x, int y, float *theta, unsigned char pheromones[900][900][3], int type){
+ 
+// pheromone 'type': 0 - path   1 - food   2 - alarm
+
 /*
+    #ants have two sensors, they turn to the direction with more pheromone
+
     X - ant
     A - left sensor
     B - right sensor
 
-                      1,9625-1,1775
- 2.7475-1.9625    A A . B B
-           . B B  A A . B B  A A . 1,1775-0.3925
-           A . B      X      A . B
-           A A X             X B B
-                               
-         B B                   A A
-         B B                   A A  
-         . . X               X . .  0.3925-(-0,3925)
-         A A                   B B
-         A A                   B B
-        (-2.7475)-2.7475        
-                    ...
+    #theta is the direction the ant is facing
+    
+                        1,9625-1,1775
+2.7475-1.9625       A A A . B B B  
+             B B B  A A A . B B B  A A A
+           . B B B    A A . B B    A A A .  1,1775-0.3925
+         A A . B          X          A . B B
+         A A A X                     X B B B
+         A A                             B B
+      
+         B B                            A A
+       B B B                          A A A
+       B B B                          A A A
+       . . . X                      X . . . 0.3925-(-0,3925)
+       A A A                          B B B
+       A A A                          B B B
+       A A                              B B
+        (-2.7475)-2.7475
+                            ...
 */    
 
     int sumA=0, sumB=0; // sum of pheromones in it's path
     
-    if(!(x+2 < 900 && x-2>0 && y+2 < 900 && y-2>0)) return; // he do be blind near border.
-
-    if(*theta >= -0.3925 && *theta <= 0.3925 ){ // -->
-        sumA += pheromones[x+2][y-2][type] + pheromones[x+1][y-2][type] + pheromones[x+1][y-1][type] + pheromones[x+2][y-1][type];
-        sumB += pheromones[x+2][y+2][type] + pheromones[x+1][y+2][type] + pheromones[x+1][y+1][type] + pheromones[x+2][y+1][type]; 
-
-    }else if(*theta <= (-2.7475) && *theta >= 2.7475 ){ // <--
-        sumA += pheromones[x-2][y+2][type] + pheromones[x-1][y+2][type] + pheromones[x-1][y+1][type] + pheromones[x-2][y+1][type];
-        sumB += pheromones[x-2][y-2][type] + pheromones[x-1][y-2][type] + pheromones[x-1][y-1][type] + pheromones[x-2][y-1][type]; 
-
-    }else if(*theta <= 1.9625 && *theta >= 1.1775 ){ // ^
-        sumA += pheromones[x-2][y-2][type] + pheromones[x-1][y-2][type] + pheromones[x-1][y-1][type] + pheromones[x-2][y-1][type];
-        sumB += pheromones[x+2][y-2][type] + pheromones[x+1][y-2][type] + pheromones[x+1][y-1][type] + pheromones[x+2][y-1][type]; 
-
-    }else if(*theta >= -1.9625 && *theta <= -1.1775 ){ // v
-        sumA += pheromones[x+2][y+2][type] + pheromones[x+1][y+2][type] + pheromones[x+1][y+1][type] + pheromones[x+2][y+1][type];
-        sumB += pheromones[x-2][y+2][type] + pheromones[x-1][y+2][type] + pheromones[x-1][y+1][type] + pheromones[x-2][y+1][type]; 
-
+    if(!(x+3 < 900 && x-3>0 && y+3 < 900 && y-3>0)) return false; // he do be blind near border.
+    
+    // -->
+    if(*theta >= -0.3925 && *theta <= 0.3925 ){ 
+        sumA =                              pheromones[x+2][y-3][type] + pheromones[x+3][y-3][type] +
+               pheromones[x+1][y-2][type] + pheromones[x+2][y-2][type] + pheromones[x+3][y-2][type] +
+               pheromones[x+1][y-1][type] + pheromones[x+2][y-1][type] + pheromones[x+3][y-1][type] ;
+        
+        sumB = pheromones[x+1][y+1][type] + pheromones[x+2][y+1][type] + pheromones[x+3][y+1][type] +
+               pheromones[x+1][y+2][type] + pheromones[x+2][y+2][type] + pheromones[x+3][y+2][type] +
+                                            pheromones[x+2][y+3][type] + pheromones[x+3][y+3][type] ;
+    // <--
+    }else if(*theta <= (-2.7475) && *theta >= 2.7475 ){ 
+        sumB = pheromones[x-3][y-3][type] + pheromones[x-2][y-3][type]                              +
+               pheromones[x-3][y-2][type] + pheromones[x-2][y-2][type] + pheromones[x-1][y-2][type] +
+               pheromones[x-3][y-1][type] + pheromones[x-2][y-1][type] + pheromones[x-1][y-1][type] ;
+        
+        sumA = pheromones[x-3][y+1][type] + pheromones[x-2][y+1][type] + pheromones[x-1][y+1][type] +
+               pheromones[x-3][y+2][type] + pheromones[x-2][y+2][type] + pheromones[x-1][y+2][type] +
+               pheromones[x-3][y+3][type] + pheromones[x-2][y+3][type]                              ;
+    // ^
+    }else if(*theta <= 1.9625 && *theta >= 1.1775 ){ 
+        sumA = pheromones[x-3][y-3][type] + pheromones[x-2][y-3][type] + pheromones[x-1][y-3][type] +
+               pheromones[x-3][y-2][type] + pheromones[x-2][y-2][type] + pheromones[x-1][y-2][type] +
+                                          + pheromones[x-2][y-1][type] + pheromones[x-1][y-1][type] ;
+        
+        sumB = pheromones[x+1][y-3][type] + pheromones[x+2][y-3][type] + pheromones[x+3][y-3][type] +
+               pheromones[x+1][y-2][type] + pheromones[x+2][y-2][type] + pheromones[x+3][y-2][type] +
+               pheromones[x+1][y-1][type] + pheromones[x+2][y-1][type]                              ;
+    // v
+    }else if(*theta >= -1.9625 && *theta <= -1.1775 ){ 
+        sumA = pheromones[x+1][y+1][type] + pheromones[x+2][y+1][type]                              +
+               pheromones[x+1][y+2][type] + pheromones[x+2][y+2][type] + pheromones[x+3][y+2][type] +
+               pheromones[x+1][y+3][type] + pheromones[x+2][y+3][type] + pheromones[x+3][y+3][type] ;
+        
+        sumB =                              pheromones[x-2][y+1][type] + pheromones[x-1][y+1][type] +
+               pheromones[x-3][y+2][type] + pheromones[x-2][y+2][type] + pheromones[x-1][y+2][type] +
+               pheromones[x-3][y+3][type] + pheromones[x-2][y+3][type] + pheromones[x-1][y+3][type] ;
+    // A: ^  B: -->
+    }else if(*theta >= 0.3925 && *theta <= 1.1775 ){ 
+        sumA = pheromones[x-1][y-3][type] + pheromones[x][y-3][type]   + pheromones[x+1][y-3][type] +
+               pheromones[x-1][y-2][type] + pheromones[x][y-2][type]   + pheromones[x+1][y-2][type] +
+                                            pheromones[x][y-1][type]                                ;
+        
+        sumB =                              pheromones[x+2][y-1][type] + pheromones[x+3][y-1][type] +
+               pheromones[x+1][y][type]   + pheromones[x+2][y][type]   + pheromones[x+3][y][type]   +
+                                            pheromones[x+2][y+1][type] + pheromones[x+3][y+1][type] ;
+    // A: <-- B: ^
+    }else if(*theta >= 1.9625 && *theta <= 2.7475 ){ 
+        sumA = pheromones[x-3][y-1][type] + pheromones[x-2][y-1][type]                              +
+               pheromones[x-3][y][type]   + pheromones[x-2][y][type]   + pheromones[x-1][y][type]   +
+               pheromones[x-3][y+1][type] + pheromones[x-2][y+1][type]                              ;
+        
+        sumB = pheromones[x-1][y-3][type] + pheromones[x][y-3][type]   + pheromones[x+1][y-3][type] +
+               pheromones[x-1][y-2][type] + pheromones[x][y-2][type]   + pheromones[x+1][y-2][type] +
+                                            pheromones[x][y-1][type]                                ;
+    // A: v  B: <--
+    }else if(*theta <= -1.9625 && *theta >= -2.7475 ){ 
+        sumA =                              pheromones[x][y+1][type]                                +
+               pheromones[x-1][y+2][type] + pheromones[x][y+2][type]   + pheromones[x+1][y+2][type] +
+               pheromones[x-1][y+3][type] + pheromones[x][y+3][type]   + pheromones[x+1][y+3][type] ;
+        
+        sumB = pheromones[x-3][y-1][type] + pheromones[x-2][y-1][type]                              +
+               pheromones[x-3][y][type]   + pheromones[x-2][y][type]   + pheromones[x-1][y][type]   +
+               pheromones[x-3][y+1][type] + pheromones[x-2][y+1][type]                              ;
+    // A: --> B: v
+    }else if(*theta <= -0.3925 && *theta >= -1.1775 ){ 
+        sumA =                              pheromones[x+2][y-1][type] + pheromones[x+3][y-1][type] +
+               pheromones[x+1][y][type]   + pheromones[x+2][y][type]   + pheromones[x+3][y][type]   +
+                                            pheromones[x+2][y+1][type] + pheromones[x+3][y+1][type] ;
+        
+        sumB =                              pheromones[x][y+1][type]                                +
+               pheromones[x-1][y+2][type] + pheromones[x][y+2][type]   + pheromones[x+1][y+2][type] +
+               pheromones[x-1][y+3][type] + pheromones[x][y+3][type]   + pheromones[x+1][y+3][type] ;
     }
+    
+    if(sumA > sumB) *theta += 0.04; // left
+    else if(sumB > sumA) *theta -= 0.04; // right
+    else if(sumA==0 && sumB==0){ 
 
-    if(sumA > sumB) *theta += 0.04;
-    else if(sumB < sumA) *theta -= 0.04;
-    else if(sumA==0 && sumB==0) *theta+= ((rand()%10)-5)/100.0 ; // no pheromone, lost/exploring
+        //TODO: if lost search further nearby
 
+        *theta+= ((rand()%11)-5)/100.0 ; // no pheromone
+        return true; // lost    
+    }
+    
+    return false; // following a path
+}
 
+void release_pheromone(unsigned char pheromones[900][900][3], int x, int y, int type, int amount){
+    if(pheromones[x][y][type]+amount > 255) // alarm pheromone
+        pheromones[x][y][type] = 255;
+    else     
+        pheromones[x][y][type] += amount;
 }
 
 
-void ant_behaviour(Ant *ant, unsigned char pheromones[900][900][3], bool enemy_location[900][900]){
+void ant_behaviour(Colony *colony, Ant *ant, unsigned char pheromones[900][900][3], bool enemy_location[900][900]){
     int x = convert_range2(ant->x);
     int y = convert_range2(ant->y); 
-
-    if(!ant->intruder_detected && search_for_enemies(x, y, enemy_location)){
-        ant->intruder_detected = true;
+    int nest_x = convert_range2(colony->nest_x);
+    int nest_y = convert_range2(colony->nest_y);
+    
+    if(ant->home_sick == 0){ // time to go home;
+        ant->home_sick = -1;
         ant->theta += 3.14; // turn 180°
     }
 
-    if(ant->intruder_detected){
-        if(pheromones[x][y][0]+50 > 255) // alarm pheromone
-            pheromones[x][y][0] = 255;
-        else     
-            pheromones[x][y][0] += 50;
-
-        follow_pheromone(x, y, &ant->theta, pheromones, 2);   
-        return;         
+    // ant at home 
+    if(x > nest_x-33 && x < nest_x+33 && y > nest_y-33 && y < nest_y+33 ){
+        ant->found_food = false;
+        ant->intruder_detected = false;
+        ant->home_sick = 250;
+        ant->lost = 0;  
     }
-    else{
+
+    // check nearby for intruders
+    if(!ant->intruder_detected && search_for_enemies(x, y, enemy_location)){
+        ant->intruder_detected = true;
+        if(ant->home_sick > 0) ant->home_sick = 0;
+        ant->lost = 0;// even if lost it can try a bit
+    }
+    // check if found a food source
+    if(!ant->found_food && check_food_nearby(x, y)){
+        ant->found_food = true;
+        if(ant->home_sick > 0) ant->home_sick = 0;
+        ant->lost = 0; // even if lost it can try a bit
+    }
+
+    // release pheromones
+    if(ant->intruder_detected)
+        release_pheromone(pheromones, x, y, 2, 50); // alarm pheromone
+    if(ant->found_food)
+        release_pheromone(pheromones, x, y, 1, 50); // food pheromone
+    if(ant->home_sick > 0){
+        release_pheromone(pheromones, x, y, 0, 50); // path pheromone
         
-        if(pheromones[x][y][2]+50 > 255)
-            pheromones[x][y][2] = 255;
-        else     
-            pheromones[x][y][2] += 50;
+        // explore while not home_sick
+        ant->theta += ((rand()%11)-5)/100.0 ; // random direction
+        ant->home_sick--;
 
-        follow_pheromone(x, y, &ant->theta, pheromones, 2);  
-
-    }
-    // add color to pheromone on the ant location
+    }else // go home, but stop pheromones if lost
+        if(follow_pheromone(x, y, &ant->theta, pheromones, 0)){
+            ant->lost++;
+            if(ant->lost > 100){ // lost the path for a while
+                ant->found_food = false;
+                ant->intruder_detected = false;           
+            }
+        }else
+            ant->lost = 0;// is in a path
     
-
-    // check current behaviour
-    // if (intruder || check_intruder())
-        // { go_home, alarm_phero || got_home, reset ; return;}
-    // if (found_food)
-        //{ go_home, food_phero || got_home, release food, follow_food_phero; return;}
-    // else
-        // explore: check_food_phero, follow || random_move, path_phero
+    
+    
+    
     
 }
 
@@ -273,7 +425,7 @@ void process_colony(Colony *colony, bool enemy_location[900][900]){
     update_pheromones(colony);
         
     for(int i=0; i<colony->ants_amount; i++){
-        ant_behaviour(&colony->ants[i], colony->pheromones, enemy_location);
+        ant_behaviour(colony, &colony->ants[i], colony->pheromones, enemy_location);
         move_ant(&colony->ants[i], 0.003, colony->ant_position);
     }
 }

@@ -12,7 +12,10 @@ typedef struct _ant{
     float radius, x, y, theta, initial_theta;
     unsigned char r,g,b;
     bool species;
-    bool have_food, intruder_detected;
+    bool found_food, intruder_detected;
+    int home_sick; 
+    int lost;
+    
 }Ant;
 #endif
 
@@ -30,17 +33,18 @@ typedef struct _colony{
 }Colony;
 #endif
 
-//Ant create_ant(float x, float y, unsigned char *color, bool species);
+//Ant create_ant();
 //int convert_range2(float x)
-//void move_ant(Ant *ant, float distance, unsigned char pheromones[900][900][3], bool ant_pos[900][900]);
+//void move_ant();
 //void update_pheromones(Colony *colony);
-//void ant_behaviour(Ant *ant, unsigned char pheromones[900][900][3], bool ant_pos[900][900]);
+//void ant_behaviour();
 
 void draw_ant(Ant ant);
 
 Colony create_colony(float x, float y, unsigned char*color, bool species, int amount);
 void reset_colony(Colony *colony);
 void process_colony(Colony *colony, bool enemy_location[900][900]);
+void create_food_map();
 
 
 

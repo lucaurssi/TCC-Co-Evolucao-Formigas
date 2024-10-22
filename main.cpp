@@ -21,7 +21,7 @@ using namespace std;
 #define windowWidth 900
 #define windowHeight 900
 #define DEBUG 1
-#define COLONY_SIZE 100
+#define COLONY_SIZE 50
 
 /*
     TO DO list:
@@ -47,11 +47,12 @@ void interface(){
     retangle(0, 0, 2, 2, color); // background
 
     if(Graphics){
-        
-        draw_pheromones(blue_ants.pheromones, red_ants.pheromones, blue_ants.draw_phero, red_ants.draw_phero);
 
+        draw_pheromones(blue_ants.pheromones, red_ants.pheromones, blue_ants.draw_phero, red_ants.draw_phero);
+        
         draw_nest(-0.5, -0.5, BLUE);
         draw_nest( 0.5, 0.5, RED);
+        
 
         for(int i=0; i<COLONY_SIZE; i++){
             draw_ant(blue_ants.ants[i]);
@@ -140,6 +141,8 @@ int main(int argc, char** argv){
 
     setColor(color, RED);
     red_ants = create_colony(0.5, 0.5, color, 0, COLONY_SIZE);
+
+    create_food_map();
 
   
     //----- Create Window -----//
