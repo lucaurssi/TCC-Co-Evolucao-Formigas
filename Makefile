@@ -1,6 +1,6 @@
 FILE = main
 ARGS = 
-FLAGS = -lglut -lGLU -lGL -Wall -Wextra
+FLAGS = -lglut -lGLU -lGL -Wall -Wextra -fopenmp
 HEADERS = $(wildcard libs/*.cpp)
 
 all:

@@ -14,10 +14,11 @@
 
 #include <math.h>
 #include <vector>
+#include <omp.h>
 
 bool food_map[900][900];
     
-Ant create_ant(float x, float y, unsigned char *color, bool species){
+Ant create_ant(float x, float y, unsigned char *color, bool species, int home_sick){
     Ant A;  
 
     A.radius = 0.01;
@@ -31,7 +32,7 @@ Ant create_ant(float x, float y, unsigned char *color, bool species){
     A.species = species;
     A.found_food = false;
     A.intruder_detected = false;
-    A.home_sick = 250;
+    A.home_sick = home_sick;
     A.lost =0;
 
     return A; 
@@ -116,7 +117,7 @@ void update_pheromones(Colony * colony){
             for(int j=nest_y-33; j<nest_y+33; j++)
                 colony->pheromones[i][j][0] = 255;  
         
-        for(int i=290; i<310; i++)
+        for(int i=290; i<310; i++) // food spot phero
             for(int j=440; j<460; j++)
                 colony->pheromones[i][j][1] = 255;
 
@@ -135,6 +136,7 @@ void update_pheromones(Colony * colony){
     
     colony->decay_timer = colony->decay_timer_max;
     
+    #pragma omp parallel for
     for(int i=0; i<900; i++)
         for(int j=0; j<900; j++)
             for(int k=0; k<3; k++)
@@ -144,11 +146,14 @@ void update_pheromones(Colony * colony){
 Colony create_colony(float x, float y, unsigned char*color, bool species, int amount){
     Colony swarm;
     Ant A;    
+    swarm.home_sick_max = 1000;
+
     for(int i=0; i<amount; i++){ // creates the ants of the colony 
-        A = create_ant(x, y, color, species);
+        A = create_ant(x, y, color, species, swarm.home_sick_max);
         swarm.ants.push_back(A); 
     }
-
+    
+    #pragma omp parallel for
     for(int i=0; i<900; i++)
         for(int j=0; j<900; j++){
             swarm.ant_position[i][j] = false; // map is empty of ants
@@ -158,7 +163,7 @@ Colony create_colony(float x, float y, unsigned char*color, bool species, int am
         }
     
     swarm.draw_phero = false; // this option is off by default
-    swarm.decay_timer_max = 15; // timer to reduce the pheromones on the map
+    swarm.decay_timer_max = 100; // timer to reduce the pheromones on the map
     swarm.decay_timer = swarm.decay_timer_max;
     swarm.decay_amount = 1; // amount of pheromones reduced per cicle
 
@@ -176,9 +181,9 @@ void reset_colony(Colony *colony){
         colony->ants[i].y = colony->nest_y;
         colony->ants[i].found_food = false;
         colony->ants[i].intruder_detected = false;
-        colony->ants[i].home_sick = 250;
     }
 
+    #pragma omp parallel for
     for(int i=0; i<900; i++)
         for(int j=0; j<900; j++){
             colony->ant_position[i][j] = false; // map is empty of ants
@@ -207,8 +212,9 @@ void food_pocket(int x, int y){
 }
 
 void create_food_map(){
+    #pragma omp parallel for
     for(int i=0; i<900; i++) 
-        for(int j=0; j<900; j++) // check for enemy ant 2 pixels away
+        for(int j=0; j<900; j++) 
             food_map[i][j] = false;
     
     food_pocket(450, 450);
@@ -217,7 +223,6 @@ void create_food_map(){
 }
 
 bool check_food_nearby(int x, int y){
-    
 
     if(x+2 < 900 && x-2>0 && y+2 < 900 && y-2>0) // not near borders
         for(int i=x-2; i<x+3; i++) 
@@ -375,7 +380,7 @@ void ant_behaviour(Colony *colony, Ant *ant, unsigned char pheromones[900][900][
     if(x > nest_x-33 && x < nest_x+33 && y > nest_y-33 && y < nest_y+33 ){
         ant->found_food = false;
         ant->intruder_detected = false;
-        ant->home_sick = 250;
+        ant->home_sick = 1000;
         ant->lost = 0;  
     }
 
@@ -423,7 +428,8 @@ void ant_behaviour(Colony *colony, Ant *ant, unsigned char pheromones[900][900][
 
 void process_colony(Colony *colony, bool enemy_location[900][900]){
     update_pheromones(colony);
-        
+    
+    #pragma omp parallel for
     for(int i=0; i<colony->ants_amount; i++){
         ant_behaviour(colony, &colony->ants[i], colony->pheromones, enemy_location);
         move_ant(&colony->ants[i], 0.003, colony->ant_position);

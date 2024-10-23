@@ -30,6 +30,7 @@ typedef struct _colony{
     unsigned char decay_amount;
     float nest_x, nest_y;
     int ants_amount;
+    int home_sick_max;
 }Colony;
 #endif
 
