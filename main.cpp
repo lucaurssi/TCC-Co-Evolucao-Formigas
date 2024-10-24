@@ -123,6 +123,7 @@ void timer(int){
 
 	glutPostRedisplay(); // call "interface" function again
 
+    
     glutTimerFunc(1000/30, timer, 0); // call "timer" function again after 1000/30 miliseconds
 }
 
@@ -144,6 +145,7 @@ int main(int argc, char** argv){
 
     create_food_map();
 
+    double t1 = omp_get_ 
   
     //----- Create Window -----//
     glutInit(&argc, argv);

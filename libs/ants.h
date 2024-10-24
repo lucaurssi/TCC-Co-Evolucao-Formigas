@@ -31,6 +31,7 @@ typedef struct _colony{
     float nest_x, nest_y;
     int ants_amount;
     int home_sick_max;
+    int food_found_amount;
 }Colony;
 #endif
 

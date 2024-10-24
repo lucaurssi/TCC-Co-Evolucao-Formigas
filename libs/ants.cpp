@@ -163,13 +163,14 @@ Colony create_colony(float x, float y, unsigned char*color, bool species, int am
         }
     
     swarm.draw_phero = false; // this option is off by default
-    swarm.decay_timer_max = 100; // timer to reduce the pheromones on the map
+    swarm.decay_timer_max = 15; // timer to reduce the pheromones on the map
     swarm.decay_timer = swarm.decay_timer_max;
     swarm.decay_amount = 1; // amount of pheromones reduced per cicle
 
     swarm.nest_x=x;
     swarm.nest_y=y;
     swarm.ants_amount = amount;
+    swarm.food_found_amount = 0;
 
     return swarm;
 }
@@ -182,6 +183,8 @@ void reset_colony(Colony *colony){
         colony->ants[i].found_food = false;
         colony->ants[i].intruder_detected = false;
     }
+    
+    colony->food_found_amount = 0;
 
     #pragma omp parallel for
     for(int i=0; i<900; i++)
@@ -378,9 +381,12 @@ void ant_behaviour(Colony *colony, Ant *ant, unsigned char pheromones[900][900][
 
     // ant at home 
     if(x > nest_x-33 && x < nest_x+33 && y > nest_y-33 && y < nest_y+33 ){
-        ant->found_food = false;
+        if(ant->found_food){
+            ant->theta += 3.1415; // turn 180°: keep getting food
+            colony->food_found_amount++;        
+        }ant->found_food = false;
         ant->intruder_detected = false;
-        ant->home_sick = 1000;
+        ant->home_sick = colony->home_sick_max; // refresh 
         ant->lost = 0;  
     }
 
@@ -402,27 +408,23 @@ void ant_behaviour(Colony *colony, Ant *ant, unsigned char pheromones[900][900][
         release_pheromone(pheromones, x, y, 2, 50); // alarm pheromone
     if(ant->found_food)
         release_pheromone(pheromones, x, y, 1, 50); // food pheromone
-    if(ant->home_sick > 0){
+    if(ant->home_sick > 0){ // exploring
         release_pheromone(pheromones, x, y, 0, 50); // path pheromone
         
-        // explore while not home_sick
-        ant->theta += ((rand()%11)-5)/100.0 ; // random direction
+        // explore while not home_sick, follows food pheromone is found
+        follow_pheromone(x, y, &ant->theta, pheromones, 1); 
         ant->home_sick--;
 
     }else // go home, but stop pheromones if lost
-        if(follow_pheromone(x, y, &ant->theta, pheromones, 0)){
+        if(follow_pheromone(x, y, &ant->theta, pheromones, 0)){ // following path pheromone, true means lost
             ant->lost++;
             if(ant->lost > 100){ // lost the path for a while
                 ant->found_food = false;
                 ant->intruder_detected = false;           
             }
         }else
-            ant->lost = 0;// is in a path
-    
-    
-    
-    
-    
+            ant->lost = 0;// is in or near a path a path
+        
 }
 
 
