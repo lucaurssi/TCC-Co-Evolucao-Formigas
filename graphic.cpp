@@ -25,9 +25,7 @@ using namespace std;
 
 /*
     TO DO list:
-    - ant vision
-    - spawn food
-    - ant behaviour
+    - better ant vision ?
     - soldier ant
     - set evolution vars
     - create evolution make command
@@ -54,9 +52,14 @@ void interface(){
         draw_nest( 0.5, 0.5, RED);
         
 
-        for(int i=0; i<COLONY_SIZE; i++){
-            draw_ant(blue_ants.ants[i]);
-            draw_ant(red_ants.ants[i]);             
+        for(int i=0; i<COLONY_SIZE; i++){ // draw ants
+	        setColor(color, blue_ants.ants[i].r, blue_ants.ants[i].g, blue_ants.ants[i].b);
+            triangle(blue_ants.ants[i].x, blue_ants.ants[i].y, 
+                blue_ants.ants[i].radius*2, blue_ants.ants[i].radius*2, color);
+
+	        setColor(color, red_ants.ants[i].r, red_ants.ants[i].g, red_ants.ants[i].b);
+            triangle(red_ants.ants[i].x, red_ants.ants[i].y, 
+                red_ants.ants[i].radius*2, red_ants.ants[i].radius*2, color);           
         }
     }
     
@@ -138,14 +141,12 @@ int main(int argc, char** argv){
     
     // --- creating ant colony --- //
     setColor(color, BLUE);
-    blue_ants = create_colony(-0.5, -0.5, color, 1, COLONY_SIZE);
+    blue_ants = create_colony(-0.5, -0.5, color, COLONY_SIZE);
 
     setColor(color, RED);
-    red_ants = create_colony(0.5, 0.5, color, 0, COLONY_SIZE);
+    red_ants = create_colony(0.5, 0.5, color, COLONY_SIZE);
 
     create_food_map();
-
-    double t1 = omp_get_ 
   
     //----- Create Window -----//
     glutInit(&argc, argv);

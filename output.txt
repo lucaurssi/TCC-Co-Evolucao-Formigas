@@ -1,0 +1,65 @@
+g++ Evolution.cpp -o app -Wall -Wextra -fopenmp libs/ants.cpp
+./app
+Indv: 1 blue: 10 time: 0.835177
+Indv: 3 blue: 10 time: 1.81356
+Indv: 5 blue: 9 time: 2.00054
+Indv: 7 blue: 10 time: 1.90214
+Indv: 21 blue: 10 time: 1.56229
+Indv: 27 blue: 10 time: 1.24942
+Indv: 42 blue: 10 time: 1.58582
+Indv: 51 blue: 10 time: 1.56759
+Indv: 52 blue: 9 time: 2.0008
+Indv: 59 blue: 10 time: 1.02074
+Indv: 68 blue: 9 time: 2.00284
+Indv: 70 blue: 10 time: 1.99608
+Indv: 73 blue: 10 time: 1.49674
+Indv: 78 blue: 9 time: 2.00257
+Indv: 80 blue: 9 time: 2.00013
+Indv: 88 blue: 10 time: 1.80575
+Indv: 91 blue: 10 time: 1.40431
+Indv: 95 blue: 10 time: 1.56641
+Indv: 0 blue: 15 time: 5.00168
+95 10 290 132 151 157
+
+Indv: 1 blue: 20 time: 4.33382
+35 1 969 171 79 181
+
+Indv: 2 blue: 20 time: 4.47806
+114 4 267 250 160 45
+
+Indv: 3 blue: 20 time: 2.49665
+128 2 761 127 204 251
+
+Indv: 4 blue: 18 time: 5.00001
+31 4 716 131 224 75
+
+Indv: 6 blue: 20 time: 3.43432
+60 7 946 44 197 227
+
+Indv: 8 blue: 20 time: 3.56131
+52 2 608 145 244 51
+
+Indv: 10 blue: 20 time: 3.89625
+98 3 807 105 51 234
+
+Indv: 11 blue: 20 time: 2.58908
+101 8 919 76 106 87
+
+Indv: 12 blue: 20 time: 2.66743
+87 7 987 27 62 253
+
+Indv: 13 blue: 15 time: 5.00348
+56 3 321 181 159 52
+
+Indv: 14 blue: 20 time: 3.92703
+125 9 823 116 29 181
+
+Indv: 15 blue: 20 time: 4.98429
+57 8 557 121 127 36
+
+Indv: 16 blue: 19 time: 5.0023
+65 7 505 142 226 132
+
+Indv: 17 blue: 20 time: 2.74116
+117 3 884 190 187 64
+

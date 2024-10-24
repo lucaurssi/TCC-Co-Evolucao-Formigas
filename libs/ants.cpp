@@ -18,7 +18,7 @@
 
 bool food_map[900][900];
     
-Ant create_ant(float x, float y, unsigned char *color, bool species, int home_sick){
+Ant create_ant(float x, float y, unsigned char *color, int home_sick){
     Ant A;  
 
     A.radius = 0.01;
@@ -29,26 +29,12 @@ Ant create_ant(float x, float y, unsigned char *color, bool species, int home_si
     A.r = color[0] ;
     A.g = color[1] + 150; // change in color that make it easier to see the ants on the nest
     A.b = color[2];
-    A.species = species;
     A.found_food = false;
     A.intruder_detected = false;
     A.home_sick = home_sick;
     A.lost =0;
 
     return A; 
-}
-
-void draw_ant(Ant ant){	
-
-	unsigned char color[3]; 
-	setColor(color, ant.r, ant.g, ant.b);
-
-	float radius = ant.radius;
-	float x = ant.x;
-	float y = ant.y;
-
-	triangle(x, y, radius*2, radius*2, color);	
-	return;
 }
 
 // -1 - 1 to 0-900
@@ -143,13 +129,13 @@ void update_pheromones(Colony * colony){
                 if(colony->pheromones[i][j][k] > 0) colony->pheromones[i][j][k] -= colony->decay_amount;
 }
 
-Colony create_colony(float x, float y, unsigned char*color, bool species, int amount){
+Colony create_colony(float x, float y, unsigned char*color, int amount){
     Colony swarm;
     Ant A;    
     swarm.home_sick_max = 1000;
 
     for(int i=0; i<amount; i++){ // creates the ants of the colony 
-        A = create_ant(x, y, color, species, swarm.home_sick_max);
+        A = create_ant(x, y, color, swarm.home_sick_max);
         swarm.ants.push_back(A); 
     }
     
@@ -171,6 +157,10 @@ Colony create_colony(float x, float y, unsigned char*color, bool species, int am
     swarm.nest_y=y;
     swarm.ants_amount = amount;
     swarm.food_found_amount = 0;
+    
+    swarm.alarm_phero_amount = 50;
+    swarm.food_phero_amount = 50;
+    swarm.path_phero_amount = 50;
 
     return swarm;
 }
@@ -351,8 +341,6 @@ bool follow_pheromone(int x, int y, float *theta, unsigned char pheromones[900][
     else if(sumB > sumA) *theta -= 0.04; // right
     else if(sumA==0 && sumB==0){ 
 
-        //TODO: if lost search further nearby
-
         *theta+= ((rand()%11)-5)/100.0 ; // no pheromone
         return true; // lost    
     }
@@ -405,11 +393,11 @@ void ant_behaviour(Colony *colony, Ant *ant, unsigned char pheromones[900][900][
 
     // release pheromones
     if(ant->intruder_detected)
-        release_pheromone(pheromones, x, y, 2, 50); // alarm pheromone
+        release_pheromone(pheromones, x, y, 2, colony->alarm_phero_amount); // alarm pheromone
     if(ant->found_food)
-        release_pheromone(pheromones, x, y, 1, 50); // food pheromone
+        release_pheromone(pheromones, x, y, 1, colony->food_phero_amount); // food pheromone
     if(ant->home_sick > 0){ // exploring
-        release_pheromone(pheromones, x, y, 0, 50); // path pheromone
+        release_pheromone(pheromones, x, y, 0, colony->path_phero_amount); // path pheromone
         
         // explore while not home_sick, follows food pheromone is found
         follow_pheromone(x, y, &ant->theta, pheromones, 1); 

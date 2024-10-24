@@ -134,6 +134,7 @@ float convert_range(int x){
     return (x/450.0)-1;
 }
 
+
 // doesn't work if the screen change it's size 
 void draw_pheromones(unsigned char b_phero[900][900][3], unsigned char r_phero[900][900][3], bool draw_blue, bool draw_red){
     unsigned char color[3];    
