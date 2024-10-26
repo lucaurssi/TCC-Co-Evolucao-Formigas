@@ -27,8 +27,6 @@ using namespace std;
     TO DO list:
     - better ant vision ?
     - soldier ant
-    - set evolution vars
-    - create evolution make command
 */
 
 unsigned char color[3];

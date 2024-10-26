@@ -159,7 +159,7 @@ Colony create_colony(float x, float y, unsigned char*color, int amount){
     swarm.food_found_amount = 0;
     
     swarm.alarm_phero_amount = 50;
-    swarm.food_phero_amount = 50;
+    swarm.food_phero_amount = 100;
     swarm.path_phero_amount = 50;
 
     return swarm;
@@ -259,7 +259,7 @@ bool follow_pheromone(int x, int y, float *theta, unsigned char pheromones[900][
                             ...
 */    
 
-    int sumA=0, sumB=0; // sum of pheromones in it's path
+    int sumA=0, sumB=0, sumC=0; // sum of pheromones in it's path
     
     if(!(x+3 < 900 && x-3>0 && y+3 < 900 && y-3>0)) return false; // he do be blind near border.
     
@@ -268,6 +268,8 @@ bool follow_pheromone(int x, int y, float *theta, unsigned char pheromones[900][
         sumA =                              pheromones[x+2][y-3][type] + pheromones[x+3][y-3][type] +
                pheromones[x+1][y-2][type] + pheromones[x+2][y-2][type] + pheromones[x+3][y-2][type] +
                pheromones[x+1][y-1][type] + pheromones[x+2][y-1][type] + pheromones[x+3][y-1][type] ;
+
+        sumC = pheromones[x+1][y][type]   + pheromones[x+2][y][type]   + pheromones[x+3][y][type]   ;
         
         sumB = pheromones[x+1][y+1][type] + pheromones[x+2][y+1][type] + pheromones[x+3][y+1][type] +
                pheromones[x+1][y+2][type] + pheromones[x+2][y+2][type] + pheromones[x+3][y+2][type] +
@@ -277,6 +279,8 @@ bool follow_pheromone(int x, int y, float *theta, unsigned char pheromones[900][
         sumB = pheromones[x-3][y-3][type] + pheromones[x-2][y-3][type]                              +
                pheromones[x-3][y-2][type] + pheromones[x-2][y-2][type] + pheromones[x-1][y-2][type] +
                pheromones[x-3][y-1][type] + pheromones[x-2][y-1][type] + pheromones[x-1][y-1][type] ;
+
+        sumC = pheromones[x-3][y][type]   + pheromones[x-2][y][type]   + pheromones[x-1][y][type]   ;
         
         sumA = pheromones[x-3][y+1][type] + pheromones[x-2][y+1][type] + pheromones[x-1][y+1][type] +
                pheromones[x-3][y+2][type] + pheromones[x-2][y+2][type] + pheromones[x-1][y+2][type] +
@@ -286,6 +290,8 @@ bool follow_pheromone(int x, int y, float *theta, unsigned char pheromones[900][
         sumA = pheromones[x-3][y-3][type] + pheromones[x-2][y-3][type] + pheromones[x-1][y-3][type] +
                pheromones[x-3][y-2][type] + pheromones[x-2][y-2][type] + pheromones[x-1][y-2][type] +
                                           + pheromones[x-2][y-1][type] + pheromones[x-1][y-1][type] ;
+
+        sumC = pheromones[x][y-1][type]   + pheromones[x][y-2][type]   + pheromones[x][y-3][type]   ;
         
         sumB = pheromones[x+1][y-3][type] + pheromones[x+2][y-3][type] + pheromones[x+3][y-3][type] +
                pheromones[x+1][y-2][type] + pheromones[x+2][y-2][type] + pheromones[x+3][y-2][type] +
@@ -295,6 +301,8 @@ bool follow_pheromone(int x, int y, float *theta, unsigned char pheromones[900][
         sumA = pheromones[x+1][y+1][type] + pheromones[x+2][y+1][type]                              +
                pheromones[x+1][y+2][type] + pheromones[x+2][y+2][type] + pheromones[x+3][y+2][type] +
                pheromones[x+1][y+3][type] + pheromones[x+2][y+3][type] + pheromones[x+3][y+3][type] ;
+
+        sumC = pheromones[x][y+1][type]   + pheromones[x][y+2][type]   + pheromones[x][y+3][type]   ;
         
         sumB =                              pheromones[x-2][y+1][type] + pheromones[x-1][y+1][type] +
                pheromones[x-3][y+2][type] + pheromones[x-2][y+2][type] + pheromones[x-1][y+2][type] +
@@ -304,6 +312,8 @@ bool follow_pheromone(int x, int y, float *theta, unsigned char pheromones[900][
         sumA = pheromones[x-1][y-3][type] + pheromones[x][y-3][type]   + pheromones[x+1][y-3][type] +
                pheromones[x-1][y-2][type] + pheromones[x][y-2][type]   + pheromones[x+1][y-2][type] +
                                             pheromones[x][y-1][type]                                ;
+
+        sumC = pheromones[x+1][y-1][type] + pheromones[x+2][y-2][type]                              ;
         
         sumB =                              pheromones[x+2][y-1][type] + pheromones[x+3][y-1][type] +
                pheromones[x+1][y][type]   + pheromones[x+2][y][type]   + pheromones[x+3][y][type]   +
@@ -313,6 +323,8 @@ bool follow_pheromone(int x, int y, float *theta, unsigned char pheromones[900][
         sumA = pheromones[x-3][y-1][type] + pheromones[x-2][y-1][type]                              +
                pheromones[x-3][y][type]   + pheromones[x-2][y][type]   + pheromones[x-1][y][type]   +
                pheromones[x-3][y+1][type] + pheromones[x-2][y+1][type]                              ;
+
+        sumC = pheromones[x-1][y-1][type] + pheromones[x-2][y-2][type]                              ;
         
         sumB = pheromones[x-1][y-3][type] + pheromones[x][y-3][type]   + pheromones[x+1][y-3][type] +
                pheromones[x-1][y-2][type] + pheromones[x][y-2][type]   + pheromones[x+1][y-2][type] +
@@ -322,6 +334,8 @@ bool follow_pheromone(int x, int y, float *theta, unsigned char pheromones[900][
         sumA =                              pheromones[x][y+1][type]                                +
                pheromones[x-1][y+2][type] + pheromones[x][y+2][type]   + pheromones[x+1][y+2][type] +
                pheromones[x-1][y+3][type] + pheromones[x][y+3][type]   + pheromones[x+1][y+3][type] ;
+
+        sumC = pheromones[x-1][y+1][type] + pheromones[x-2][y+2][type]                              ;
         
         sumB = pheromones[x-3][y-1][type] + pheromones[x-2][y-1][type]                              +
                pheromones[x-3][y][type]   + pheromones[x-2][y][type]   + pheromones[x-1][y][type]   +
@@ -331,13 +345,16 @@ bool follow_pheromone(int x, int y, float *theta, unsigned char pheromones[900][
         sumA =                              pheromones[x+2][y-1][type] + pheromones[x+3][y-1][type] +
                pheromones[x+1][y][type]   + pheromones[x+2][y][type]   + pheromones[x+3][y][type]   +
                                             pheromones[x+2][y+1][type] + pheromones[x+3][y+1][type] ;
+
+        sumC = pheromones[x+1][y+1][type] + pheromones[x+2][y+2][type]                              ;
         
         sumB =                              pheromones[x][y+1][type]                                +
                pheromones[x-1][y+2][type] + pheromones[x][y+2][type]   + pheromones[x+1][y+2][type] +
                pheromones[x-1][y+3][type] + pheromones[x][y+3][type]   + pheromones[x+1][y+3][type] ;
     }
     
-    if(sumA > sumB) *theta += 0.04; // left
+    if(sumC>sumA && sumC>sumB) ; // center is better path
+    else if(sumA > sumB) *theta += 0.04; // left
     else if(sumB > sumA) *theta -= 0.04; // right
     else if(sumA==0 && sumB==0){ 
 
