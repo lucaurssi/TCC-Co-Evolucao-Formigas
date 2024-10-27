@@ -15,16 +15,17 @@
 #include <math.h>
 #include <vector>
 #include <omp.h>
+#include <iostream>
 
 bool food_map[900][900];
     
-Ant create_ant(float x, float y, unsigned char *color, int home_sick){
+Ant create_ant(int x, int y, unsigned char *color, int home_sick){
     Ant A;  
 
     A.radius = 0.01;
     A.x = x;
     A.y = y;
-    A.theta = ((rand()%628)-314)/100.0; // moving direction
+    A.theta = rand()%8; // moving direction
     A.initial_theta = A.theta;
     A.r = color[0] ;
     A.g = color[1] + 150; // change in color that make it easier to see the ants on the nest
@@ -46,50 +47,75 @@ int convert_range2(float x){
     return output;
 }
 
-void move_ant(Ant *ant, float distance, bool ant_pos[900][900]){
-    int x,y;	
-    
-    // this keeps theta value between -3.14 and 3.14, which is the used directions in our functions
-    if(ant->theta > 3.1415) ant->theta = ant->theta - 6.283;
-    if(ant->theta < -3.1415) ant->theta = ant->theta + 6.283;
-    
+void move_ant(Ant *ant, bool ant_pos[900][900]){
+ 
     // remove ant from previous location
-    x = convert_range2(ant->x);
-    y = convert_range2(ant->y);
-    ant_pos[x][y] = false; // location for ant vision
+    ant_pos[ant->x][ant->y] = false; // location for ant vision
     
 	// move towards theta
-	ant->x = ant->x + distance*cos(ant->theta);
-	ant->y = ant->y + distance*sin(ant->theta);
+    switch(ant->theta){
+        case 0: 
+            ant->x++;
+            break;
+        case 1:
+            ant->x++;
+            ant->y--;
+            break;
+        case 2:
+            ant->y--;
+            break;
+        case 3:
+            ant->y--;
+            ant->x--;
+            break;
+        case 4:
+            ant->x--;
+            break;
+        case 5:
+            ant->x--;
+            ant->y++;
+            break;
+        case 6:
+            ant->y++;
+            break;
+        case 7:
+            ant->y++;
+            ant->x++;
+            break;     
+        default:
+            std::cout << "fuck "<< ant->theta << '\n';   
+    }
 
-    // add ant to new location
-    x = convert_range2(ant->x);
-    y = convert_range2(ant->y);
-    ant_pos[x][y] = true; 
 
 	// end of screen
-    if(ant->x > 1){ // top wall /\        /
-        ant->x = 1;
-        if(ant->theta >0) ant->theta = ant->theta + 1.57;
-        else if(ant->theta <0) ant->theta = ant->theta - 1.57;
-        else ant->theta = 3.14;
+    if(ant->x < 0){ // top wall /\        /
+        ant->x = 0;
+        if(ant->theta == 1)ant->theta = 7;
+        else if(ant->theta == 2)ant->theta = 6;
+        else ant->theta = 5;
     
-    }else if(ant->x < -1){ // bottom wall \/
-        ant->x = -1;
-        if(ant->theta >0) ant->theta = ant->theta - 1.57;
-        else if(ant->theta <0) ant->theta = ant->theta + 1.57;
-        else ant->theta = 0;
+    }else if(ant->x > 899){ // bottom wall \/
+        ant->x = 899;
+        if(ant->theta == 5)ant->theta = 3;
+        else if(ant->theta == 6)ant->theta = 2;
+        else ant->theta = 1;
     }
-	if(ant->y > 1){ // right wall  -->
-        ant->y = 1;
-        ant->theta = -ant->theta;
+	if(ant->y > 899){ // right wall  -->
+        ant->y = 899;
+        if(ant->theta == 1)ant->theta = 3;
+        else if(ant->theta == 0)ant->theta = 4;
+        else ant->theta = 5;
     
-    }else if(ant->y < -1){ // left wall <--
-        ant->y = -1;
-        ant->theta = -ant->theta;
+    }else if(ant->y < 0){ // left wall <--
+        ant->y = 0;
+        if(ant->theta == 3)ant->theta = 1;
+        else if(ant->theta == 4)ant->theta = 0;
+        else ant->theta = 7;
     }
     
    
+    // add ant to new location
+    ant_pos[ant->x][ant->y] = true; 
     
 }
 
@@ -130,12 +156,15 @@ void update_pheromones(Colony * colony){
 }
 
 Colony create_colony(float x, float y, unsigned char*color, int amount){
+    int ant_x = convert_range2(x);
+    int ant_y = convert_range2(y);
+    
     Colony swarm;
     Ant A;    
-    swarm.home_sick_max = 1000;
+    swarm.home_sick_max = 300;
 
     for(int i=0; i<amount; i++){ // creates the ants of the colony 
-        A = create_ant(x, y, color, swarm.home_sick_max);
+        A = create_ant(ant_x, ant_y, color, swarm.home_sick_max);
         swarm.ants.push_back(A); 
     }
     
@@ -166,10 +195,13 @@ Colony create_colony(float x, float y, unsigned char*color, int amount){
 }
 
 void reset_colony(Colony *colony){
+    int x = convert_range2(colony->nest_x);
+    int y = convert_range2(colony->nest_y);
+
     for(int i=0; i<colony->ants_amount; i++){
         colony->ants[i].theta = colony->ants[i].initial_theta;
-        colony->ants[i].x = colony->nest_x;
-        colony->ants[i].y = colony->nest_y;
+        colony->ants[i].x = x;
+        colony->ants[i].y = y;
         colony->ants[i].found_food = false;
         colony->ants[i].intruder_detected = false;
     }
@@ -227,7 +259,7 @@ bool check_food_nearby(int x, int y){
 
 
 // this function changes the direction of the ant based on it's behaviour
-bool follow_pheromone(int x, int y, float *theta, unsigned char pheromones[900][900][3], int type){
+bool find_pheromone(int x, int y, int *theta, unsigned char pheromones[900][900][3], int type){
  
 // pheromone 'type': 0 - path   1 - food   2 - alarm
 
@@ -263,106 +295,254 @@ bool follow_pheromone(int x, int y, float *theta, unsigned char pheromones[900][
     
     if(!(x+3 < 900 && x-3>0 && y+3 < 900 && y-3>0)) return false; // he do be blind near border.
     
-    // -->
-    if(*theta >= -0.3925 && *theta <= 0.3925 ){ 
-        sumA =                              pheromones[x+2][y-3][type] + pheromones[x+3][y-3][type] +
-               pheromones[x+1][y-2][type] + pheromones[x+2][y-2][type] + pheromones[x+3][y-2][type] +
-               pheromones[x+1][y-1][type] + pheromones[x+2][y-1][type] + pheromones[x+3][y-1][type] ;
+    switch(*theta){
+        // -->
+        case 0: 
+            sumA =                              pheromones[x+2][y-3][type] + pheromones[x+3][y-3][type] +
+                   pheromones[x+1][y-2][type] + pheromones[x+2][y-2][type] + pheromones[x+3][y-2][type] +
+                   pheromones[x+1][y-1][type] + pheromones[x+2][y-1][type] + pheromones[x+3][y-1][type] ;
 
-        sumC = pheromones[x+1][y][type]   + pheromones[x+2][y][type]   + pheromones[x+3][y][type]   ;
-        
-        sumB = pheromones[x+1][y+1][type] + pheromones[x+2][y+1][type] + pheromones[x+3][y+1][type] +
-               pheromones[x+1][y+2][type] + pheromones[x+2][y+2][type] + pheromones[x+3][y+2][type] +
-                                            pheromones[x+2][y+3][type] + pheromones[x+3][y+3][type] ;
-    // <--
-    }else if(*theta <= (-2.7475) && *theta >= 2.7475 ){ 
-        sumB = pheromones[x-3][y-3][type] + pheromones[x-2][y-3][type]                              +
-               pheromones[x-3][y-2][type] + pheromones[x-2][y-2][type] + pheromones[x-1][y-2][type] +
-               pheromones[x-3][y-1][type] + pheromones[x-2][y-1][type] + pheromones[x-1][y-1][type] ;
+            sumC = pheromones[x+1][y][type]   + pheromones[x+2][y][type]   + pheromones[x+3][y][type]   ;
+            
+            sumB = pheromones[x+1][y+1][type] + pheromones[x+2][y+1][type] + pheromones[x+3][y+1][type] +
+                   pheromones[x+1][y+2][type] + pheromones[x+2][y+2][type] + pheromones[x+3][y+2][type] +
+                                                pheromones[x+2][y+3][type] + pheromones[x+3][y+3][type] ;
+            break;       
+         // <--
+        case 4:
+            sumB = pheromones[x-3][y-3][type] + pheromones[x-2][y-3][type]                              +
+                   pheromones[x-3][y-2][type] + pheromones[x-2][y-2][type] + pheromones[x-1][y-2][type] +
+                   pheromones[x-3][y-1][type] + pheromones[x-2][y-1][type] + pheromones[x-1][y-1][type] ;
 
-        sumC = pheromones[x-3][y][type]   + pheromones[x-2][y][type]   + pheromones[x-1][y][type]   ;
-        
-        sumA = pheromones[x-3][y+1][type] + pheromones[x-2][y+1][type] + pheromones[x-1][y+1][type] +
-               pheromones[x-3][y+2][type] + pheromones[x-2][y+2][type] + pheromones[x-1][y+2][type] +
-               pheromones[x-3][y+3][type] + pheromones[x-2][y+3][type]                              ;
-    // ^
-    }else if(*theta <= 1.9625 && *theta >= 1.1775 ){ 
-        sumA = pheromones[x-3][y-3][type] + pheromones[x-2][y-3][type] + pheromones[x-1][y-3][type] +
-               pheromones[x-3][y-2][type] + pheromones[x-2][y-2][type] + pheromones[x-1][y-2][type] +
-                                          + pheromones[x-2][y-1][type] + pheromones[x-1][y-1][type] ;
+            sumC = pheromones[x-3][y][type]   + pheromones[x-2][y][type]   + pheromones[x-1][y][type]   ;
+            
+            sumA = pheromones[x-3][y+1][type] + pheromones[x-2][y+1][type] + pheromones[x-1][y+1][type] +
+                   pheromones[x-3][y+2][type] + pheromones[x-2][y+2][type] + pheromones[x-1][y+2][type] +
+                   pheromones[x-3][y+3][type] + pheromones[x-2][y+3][type]                              ;
+            break;       
+         // ^
+        case 2: 
+            sumA = pheromones[x-3][y-3][type] + pheromones[x-2][y-3][type] + pheromones[x-1][y-3][type] +
+                   pheromones[x-3][y-2][type] + pheromones[x-2][y-2][type] + pheromones[x-1][y-2][type] +
+                                              + pheromones[x-2][y-1][type] + pheromones[x-1][y-1][type] ;
 
-        sumC = pheromones[x][y-1][type]   + pheromones[x][y-2][type]   + pheromones[x][y-3][type]   ;
-        
-        sumB = pheromones[x+1][y-3][type] + pheromones[x+2][y-3][type] + pheromones[x+3][y-3][type] +
-               pheromones[x+1][y-2][type] + pheromones[x+2][y-2][type] + pheromones[x+3][y-2][type] +
-               pheromones[x+1][y-1][type] + pheromones[x+2][y-1][type]                              ;
-    // v
-    }else if(*theta >= -1.9625 && *theta <= -1.1775 ){ 
-        sumA = pheromones[x+1][y+1][type] + pheromones[x+2][y+1][type]                              +
-               pheromones[x+1][y+2][type] + pheromones[x+2][y+2][type] + pheromones[x+3][y+2][type] +
-               pheromones[x+1][y+3][type] + pheromones[x+2][y+3][type] + pheromones[x+3][y+3][type] ;
+            sumC = pheromones[x][y-1][type]   + pheromones[x][y-2][type]   + pheromones[x][y-3][type]   ;
+            
+            sumB = pheromones[x+1][y-3][type] + pheromones[x+2][y-3][type] + pheromones[x+3][y-3][type] +
+                   pheromones[x+1][y-2][type] + pheromones[x+2][y-2][type] + pheromones[x+3][y-2][type] +
+                   pheromones[x+1][y-1][type] + pheromones[x+2][y-1][type]                              ;
+            break;
+        // v
+        case 6:
+            sumA = pheromones[x+1][y+1][type] + pheromones[x+2][y+1][type]                              +
+                   pheromones[x+1][y+2][type] + pheromones[x+2][y+2][type] + pheromones[x+3][y+2][type] +
+                   pheromones[x+1][y+3][type] + pheromones[x+2][y+3][type] + pheromones[x+3][y+3][type] ;
 
-        sumC = pheromones[x][y+1][type]   + pheromones[x][y+2][type]   + pheromones[x][y+3][type]   ;
-        
-        sumB =                              pheromones[x-2][y+1][type] + pheromones[x-1][y+1][type] +
-               pheromones[x-3][y+2][type] + pheromones[x-2][y+2][type] + pheromones[x-1][y+2][type] +
-               pheromones[x-3][y+3][type] + pheromones[x-2][y+3][type] + pheromones[x-1][y+3][type] ;
-    // A: ^  B: -->
-    }else if(*theta >= 0.3925 && *theta <= 1.1775 ){ 
-        sumA = pheromones[x-1][y-3][type] + pheromones[x][y-3][type]   + pheromones[x+1][y-3][type] +
-               pheromones[x-1][y-2][type] + pheromones[x][y-2][type]   + pheromones[x+1][y-2][type] +
-                                            pheromones[x][y-1][type]                                ;
+            sumC = pheromones[x][y+1][type]   + pheromones[x][y+2][type]   + pheromones[x][y+3][type]   ;
+            
+            sumB =                              pheromones[x-2][y+1][type] + pheromones[x-1][y+1][type] +
+                   pheromones[x-3][y+2][type] + pheromones[x-2][y+2][type] + pheromones[x-1][y+2][type] +
+                   pheromones[x-3][y+3][type] + pheromones[x-2][y+3][type] + pheromones[x-1][y+3][type] ;
+            break;
+        // A: ^  B: -->
+        case 1: 
+            sumA = pheromones[x-1][y-3][type] + pheromones[x][y-3][type]   + pheromones[x+1][y-3][type] +
+                   pheromones[x-1][y-2][type] + pheromones[x][y-2][type]   + pheromones[x+1][y-2][type] +
+                                                pheromones[x][y-1][type]                                ;
 
-        sumC = pheromones[x+1][y-1][type] + pheromones[x+2][y-2][type]                              ;
-        
-        sumB =                              pheromones[x+2][y-1][type] + pheromones[x+3][y-1][type] +
-               pheromones[x+1][y][type]   + pheromones[x+2][y][type]   + pheromones[x+3][y][type]   +
-                                            pheromones[x+2][y+1][type] + pheromones[x+3][y+1][type] ;
-    // A: <-- B: ^
-    }else if(*theta >= 1.9625 && *theta <= 2.7475 ){ 
-        sumA = pheromones[x-3][y-1][type] + pheromones[x-2][y-1][type]                              +
-               pheromones[x-3][y][type]   + pheromones[x-2][y][type]   + pheromones[x-1][y][type]   +
-               pheromones[x-3][y+1][type] + pheromones[x-2][y+1][type]                              ;
+            sumC = pheromones[x+1][y-1][type] + pheromones[x+2][y-2][type]                              ;
+            
+            sumB =                              pheromones[x+2][y-1][type] + pheromones[x+3][y-1][type] +
+                   pheromones[x+1][y][type]   + pheromones[x+2][y][type]   + pheromones[x+3][y][type]   +
+                                                pheromones[x+2][y+1][type] + pheromones[x+3][y+1][type] ;
+            break;        
+        // A: <-- B: ^
+        case 3:
+            sumA = pheromones[x-3][y-1][type] + pheromones[x-2][y-1][type]                              +
+                   pheromones[x-3][y][type]   + pheromones[x-2][y][type]   + pheromones[x-1][y][type]   +
+                   pheromones[x-3][y+1][type] + pheromones[x-2][y+1][type]                              ;
 
-        sumC = pheromones[x-1][y-1][type] + pheromones[x-2][y-2][type]                              ;
-        
-        sumB = pheromones[x-1][y-3][type] + pheromones[x][y-3][type]   + pheromones[x+1][y-3][type] +
-               pheromones[x-1][y-2][type] + pheromones[x][y-2][type]   + pheromones[x+1][y-2][type] +
-                                            pheromones[x][y-1][type]                                ;
-    // A: v  B: <--
-    }else if(*theta <= -1.9625 && *theta >= -2.7475 ){ 
-        sumA =                              pheromones[x][y+1][type]                                +
-               pheromones[x-1][y+2][type] + pheromones[x][y+2][type]   + pheromones[x+1][y+2][type] +
-               pheromones[x-1][y+3][type] + pheromones[x][y+3][type]   + pheromones[x+1][y+3][type] ;
+            sumC = pheromones[x-1][y-1][type] + pheromones[x-2][y-2][type]                              ;
+            
+            sumB = pheromones[x-1][y-3][type] + pheromones[x][y-3][type]   + pheromones[x+1][y-3][type] +
+                   pheromones[x-1][y-2][type] + pheromones[x][y-2][type]   + pheromones[x+1][y-2][type] +
+                                                pheromones[x][y-1][type]                                ;
+            break;
+        // A: v  B: <--
+        case 5:
+            sumA =                              pheromones[x][y+1][type]                                +
+                   pheromones[x-1][y+2][type] + pheromones[x][y+2][type]   + pheromones[x+1][y+2][type] +
+                   pheromones[x-1][y+3][type] + pheromones[x][y+3][type]   + pheromones[x+1][y+3][type] ;
 
-        sumC = pheromones[x-1][y+1][type] + pheromones[x-2][y+2][type]                              ;
-        
-        sumB = pheromones[x-3][y-1][type] + pheromones[x-2][y-1][type]                              +
-               pheromones[x-3][y][type]   + pheromones[x-2][y][type]   + pheromones[x-1][y][type]   +
-               pheromones[x-3][y+1][type] + pheromones[x-2][y+1][type]                              ;
-    // A: --> B: v
-    }else if(*theta <= -0.3925 && *theta >= -1.1775 ){ 
-        sumA =                              pheromones[x+2][y-1][type] + pheromones[x+3][y-1][type] +
-               pheromones[x+1][y][type]   + pheromones[x+2][y][type]   + pheromones[x+3][y][type]   +
-                                            pheromones[x+2][y+1][type] + pheromones[x+3][y+1][type] ;
+            sumC = pheromones[x-1][y+1][type] + pheromones[x-2][y+2][type]                              ;
+            
+            sumB = pheromones[x-3][y-1][type] + pheromones[x-2][y-1][type]                              +
+                   pheromones[x-3][y][type]   + pheromones[x-2][y][type]   + pheromones[x-1][y][type]   +
+                   pheromones[x-3][y+1][type] + pheromones[x-2][y+1][type]                              ;
+            break;
+        // A: --> B: v
+        case 7:
+            sumA =                              pheromones[x+2][y-1][type] + pheromones[x+3][y-1][type] +
+                   pheromones[x+1][y][type]   + pheromones[x+2][y][type]   + pheromones[x+3][y][type]   +
+                                                pheromones[x+2][y+1][type] + pheromones[x+3][y+1][type] ;
 
-        sumC = pheromones[x+1][y+1][type] + pheromones[x+2][y+2][type]                              ;
-        
-        sumB =                              pheromones[x][y+1][type]                                +
-               pheromones[x-1][y+2][type] + pheromones[x][y+2][type]   + pheromones[x+1][y+2][type] +
-               pheromones[x-1][y+3][type] + pheromones[x][y+3][type]   + pheromones[x+1][y+3][type] ;
+            sumC = pheromones[x+1][y+1][type] + pheromones[x+2][y+2][type]                              ;
+            
+            sumB =                              pheromones[x][y+1][type]                                +
+                   pheromones[x-1][y+2][type] + pheromones[x][y+2][type]   + pheromones[x+1][y+2][type] +
+                   pheromones[x-1][y+3][type] + pheromones[x][y+3][type]   + pheromones[x+1][y+3][type] ;
+            break;
     }
-    
-    if(sumC>sumA && sumC>sumB) ; // center is better path
-    else if(sumA > sumB) *theta += 0.04; // left
-    else if(sumB > sumA) *theta -= 0.04; // right
-    else if(sumA==0 && sumB==0){ 
 
-        *theta+= ((rand()%11)-5)/100.0 ; // no pheromone
+    if(sumC>sumA && sumC>sumB) ; // center is better path, keep current theta
+    else if(sumA > sumB) *theta = (*theta+1)%8; // left
+    else if(sumB > sumA) *theta = (*theta+7)%8; // right
+
+    else if(sumA==0 && sumB==0){ // if no path, random theta, return lost
+        int randd = rand()%100;
+        if(randd < 2) *theta = (*theta+1)%8; // left (10% chance)
+        else if(randd < 4) *theta = (*theta+7)%8; // right (10% chance)
+        // else keep current theta // (80% chance)
         return true; // lost    
     }
     
-    return false; // following a path
+    return false; // found a path
+}
+
+// try to follow a path, uses 'find_pheromone' if lost
+bool follow_pheromone(int x, int y, int *theta, unsigned char pheromones[900][900][3], int type){
+
+    if(pheromones[x][y][type] == 0) // not in a pheromone path of 'type' 
+        return find_pheromone(x, y, theta, pheromones, type); 
+    
+    /*
+        G H A    . A B    A B C
+        F X B    . X C    H X D    ...
+        E D C    . . .    G F E
+
+        -->       ^ -->      ^
+
+        3 2 1
+        4 X 0  *theta
+        5 6 7
+    */
+
+    int a,b,c,d,e,f,g,h;
+    
+    switch(*theta){
+        case 0: // -->         
+            a = pheromones[x+1][y-1][type];
+            b = pheromones[x+1][y][type];
+            c = pheromones[x+1][y+1][type];
+            d = pheromones[x][y+1][type];
+            e = pheromones[x-1][y+1][type];
+            f = pheromones[x-1][y][type];
+            g = pheromones[x-1][y-1][type];
+            h = pheromones[x][y-1][type];
+            break;
+        case 1: // ^ -->         
+            b = pheromones[x+1][y-1][type];
+            c = pheromones[x+1][y][type];
+            d = pheromones[x+1][y+1][type];
+            e = pheromones[x][y+1][type];
+            f = pheromones[x-1][y+1][type];
+            g = pheromones[x-1][y][type];
+            h = pheromones[x-1][y-1][type];
+            a = pheromones[x][y-1][type];
+            break;
+        case 2: // ^         
+            c = pheromones[x+1][y-1][type];
+            d = pheromones[x+1][y][type];
+            e = pheromones[x+1][y+1][type];
+            f = pheromones[x][y+1][type];
+            g = pheromones[x-1][y+1][type];
+            h = pheromones[x-1][y][type];
+            a = pheromones[x-1][y-1][type];
+            b = pheromones[x][y-1][type];
+            break;
+        case 3: // <-- ^         
+            d = pheromones[x+1][y-1][type];
+            e = pheromones[x+1][y][type];
+            f = pheromones[x+1][y+1][type];
+            g = pheromones[x][y+1][type];
+            h = pheromones[x-1][y+1][type];
+            a = pheromones[x-1][y][type];
+            b = pheromones[x-1][y-1][type];
+            c = pheromones[x][y-1][type];
+            break;
+        case 4: // <--       
+            e = pheromones[x+1][y-1][type];
+            f = pheromones[x+1][y][type];
+            g = pheromones[x+1][y+1][type];
+            h = pheromones[x][y+1][type];
+            a = pheromones[x-1][y+1][type];
+            b = pheromones[x-1][y][type];
+            c = pheromones[x-1][y-1][type];
+            d = pheromones[x][y-1][type];
+            break;
+        case 5: // <-- V         
+            f = pheromones[x+1][y-1][type];
+            g = pheromones[x+1][y][type];
+            h = pheromones[x+1][y+1][type];
+            a = pheromones[x][y+1][type];
+            b = pheromones[x-1][y+1][type];
+            c = pheromones[x-1][y][type];
+            d = pheromones[x-1][y-1][type];
+            e = pheromones[x][y-1][type];
+            break;
+        case 6: // V         
+            g = pheromones[x+1][y-1][type];
+            h = pheromones[x+1][y][type];
+            a = pheromones[x+1][y+1][type];
+            b = pheromones[x][y+1][type];
+            c = pheromones[x-1][y+1][type];
+            d = pheromones[x-1][y][type];
+            e = pheromones[x-1][y-1][type];
+            f = pheromones[x][y-1][type];
+            break;
+        case 7: // V -->         
+            h = pheromones[x+1][y-1][type];
+            a = pheromones[x+1][y][type];
+            b = pheromones[x+1][y+1][type];
+            c = pheromones[x][y+1][type];
+            d = pheromones[x-1][y+1][type];
+            e = pheromones[x-1][y][type];
+            f = pheromones[x-1][y-1][type];
+            g = pheromones[x][y-1][type];
+            break;
+    }
+
+    
+
+    
+
+    if(b != 0) return false; // pheromones foward (B), keep going
+
+    else if(a==0 && c==0){ // no pheromone on A or C
+        
+        if(d==0 && h==0){ // no pheromone on D or H
+            
+            if(f==0 && g==0 && e==0) // no pheromone around
+                return find_pheromone(x,y,theta, pheromones, type); 
+
+            else if(g > f && g > e) *theta = (*theta + 3)%8; // G has a path
+            else if(e > f) *theta = (*theta + 5)%8; // E has a path
+            else if(find_pheromone(x,y,theta, pheromones, type)) // if no other path is found further ahead, goes back to F
+                *theta = (*theta + 4)%8; // F has a path 
+        }
+        else if(h > d) // turn hard left (H)
+            *theta = (*theta+2)%8;
+        else      // turn hard right (D)
+            *theta = (*theta+6)%8;
+    }
+    else if(a > c) // turn left (A)
+        *theta = (*theta+1)%8;
+    else      // turn right (C)
+        *theta = (*theta+7)%8;
+
+
+    return false; // not lost
+
 }
 
 void release_pheromone(unsigned char pheromones[900][900][3], int x, int y, int type, int amount){
@@ -374,22 +554,23 @@ void release_pheromone(unsigned char pheromones[900][900][3], int x, int y, int 
 
 
 void ant_behaviour(Colony *colony, Ant *ant, unsigned char pheromones[900][900][3], bool enemy_location[900][900]){
-    int x = convert_range2(ant->x);
-    int y = convert_range2(ant->y); 
+    int x = ant->x;
+    int y = ant->y; 
     int nest_x = convert_range2(colony->nest_x);
     int nest_y = convert_range2(colony->nest_y);
     
     if(ant->home_sick == 0){ // time to go home;
         ant->home_sick = -1;
-        ant->theta += 3.14; // turn 180°
+        ant->theta = (ant->theta + 4)%8 ; // turn 180°
     }
 
     // ant at home 
     if(x > nest_x-33 && x < nest_x+33 && y > nest_y-33 && y < nest_y+33 ){
         if(ant->found_food){
-            ant->theta += 3.1415; // turn 180°: keep getting food
+            ant->theta = (ant->theta + 4)%8 ; // turn 180°
             colony->food_found_amount++;        
-        }ant->found_food = false;
+        }
+        ant->found_food = false;
         ant->intruder_detected = false;
         ant->home_sick = colony->home_sick_max; // refresh 
         ant->lost = 0;  
@@ -439,7 +620,7 @@ void process_colony(Colony *colony, bool enemy_location[900][900]){
     #pragma omp parallel for
     for(int i=0; i<colony->ants_amount; i++){
         ant_behaviour(colony, &colony->ants[i], colony->pheromones, enemy_location);
-        move_ant(&colony->ants[i], 0.003, colony->ant_position);
+        move_ant(&colony->ants[i], colony->ant_position);
     }
 }
 

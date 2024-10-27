@@ -25,8 +25,11 @@ using namespace std;
 
 /*
     TO DO list:
-    - better ant vision ?
-    - soldier ant
+    - better ant vision ? shorter is better ? (follow / find)
+
+    - soldier ant 
+
+    - proper evolution, leave it running overnight
 */
 
 unsigned char color[3];
@@ -52,11 +55,11 @@ void interface(){
 
         for(int i=0; i<COLONY_SIZE; i++){ // draw ants
 	        setColor(color, blue_ants.ants[i].r, blue_ants.ants[i].g, blue_ants.ants[i].b);
-            triangle(blue_ants.ants[i].x, blue_ants.ants[i].y, 
+            triangle(convert_range(blue_ants.ants[i].x), convert_range(blue_ants.ants[i].y), 
                 blue_ants.ants[i].radius*2, blue_ants.ants[i].radius*2, color);
 
 	        setColor(color, red_ants.ants[i].r, red_ants.ants[i].g, red_ants.ants[i].b);
-            triangle(red_ants.ants[i].x, red_ants.ants[i].y, 
+            triangle(convert_range(red_ants.ants[i].x), convert_range(red_ants.ants[i].y), 
                 red_ants.ants[i].radius*2, red_ants.ants[i].radius*2, color);           
         }
     }

@@ -9,7 +9,8 @@
 #ifndef ANT
 #define ANT
 typedef struct _ant{
-    float radius, x, y, theta, initial_theta;
+    float radius;
+    int  x, y, theta, initial_theta;
     unsigned char r,g,b;
     bool found_food, intruder_detected;
     int home_sick; 

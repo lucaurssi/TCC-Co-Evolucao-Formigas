@@ -36,3 +36,4 @@ void draw_bottom_menu(bool PLAY, bool Graphics, bool b_phero, bool r_phero);
 void draw_nest(float x, float y, unsigned char R, unsigned char G, unsigned char B);
 
 void draw_pheromones(unsigned char b_phero[900][900][3], unsigned char r_phero[900][900][3], bool draw_blue, bool draw_red);
+float convert_range(int x);
