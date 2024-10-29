@@ -19,6 +19,7 @@ Colony blue_ants, red_ants;
 typedef struct _a{
     unsigned short int decay, decay_amount, sick;
     unsigned char alarm, food, path;
+	int soldiers_amount, home_sick_max;
 }A;
 
 void edit_colony(Colony *colony, A ind){
@@ -34,6 +35,9 @@ void edit_colony(Colony *colony, A ind){
     
     colony->home_sick_max = ind.sick; // ants go home when zero
 
+	colony->soldiers_amount = ind.soldiers_amount;
+	colony->home_sick_max = ind.home_sick_max;
+
     return;
 }
 
@@ -46,7 +50,31 @@ A generate_random_A(){
     ind.alarm = 20 + rand()%236;
     ind.food = 20 + rand()%236; // 20 - 255
     ind.path = 20 + rand()%236;
+
+	ind.soldiers_amount = rand()%50; // 0-49
+	ind.home_sick_max = 51 + rand()%1500;	// 50 - 1500
+
     return ind;
+}
+
+double simulate(Colony* blue, Colony* red, Food* food){
+	unsigned char count = 0;
+	double t2 = omp_get_wtime();
+
+	while(blue->food_found_amount < 100 && red->food_found_amount < 100){
+
+		if(count == 255){ // every 255 cicles, check if the simulation passed one minute and stop it
+			count = 0;	  // this is to prevent an ineficient individual from taking too much time
+			if(omp_get_wtime() - t2 > 60) break;          
+		}
+
+		process_colony(blue, red->ant_position, food);
+		process_colony(red, blue->ant_position, food);
+		process_food(food);
+		count++;
+	}
+
+	return omp_get_wtime() - t2;
 }
 
 
@@ -54,61 +82,36 @@ int main(/*int argc, char** argv*/){
 
     // ----- setup ----- //
     
-    double t1, t2;
-    unsigned char color[3]={0,0,0};
-    vector<A> vec;
+    double time;
+    //vector<A> vec;
     A ind;
+    Food food;
 
-    blue_ants = create_colony(-0.5, -0.5, color, COLONY_SIZE);
-    red_ants = create_colony(0.5, 0.5, color, COLONY_SIZE);
+    blue_ants = create_colony(-0.5, -0.5, COLONY_SIZE, 10);
+    red_ants = create_colony(0.5, 0.5, COLONY_SIZE, 10);
 
-    create_food_map();
+    create_food_map(&food);
+    
 
     for(int i=0; i<100; i++){
-        ind = generate_random_A();
-        edit_colony(&blue_ants, ind);
-        reset_colony(&blue_ants);
+        ind = generate_random_A(); // generate random parameters
+        edit_colony(&blue_ants, ind); // apply parameters
+
+        reset_colony(&blue_ants); // reset colonies
         reset_colony(&red_ants);
-
-        t2 = omp_get_wtime();
         
-        while(blue_ants.food_found_amount < 10 && red_ants.food_found_amount < 10){
-            process_colony(&blue_ants, red_ants.ant_position);
-            process_colony(&red_ants, blue_ants.ant_position);
-            if(omp_get_wtime()-t2 > 2) break;
-        }
-
-        t1 = omp_get_wtime() - t2;
-
-        if(t1 < 15 && blue_ants.food_found_amount >= 9){
-            cout << "Indv: " << i << " blue: " << blue_ants.food_found_amount << " time: " << t1 << '\n'; 
-            vec.push_back(ind);  
-        }
-         
-    }
-
-    for(int i=0; i<(int)vec.size(); i++){
-        edit_colony(&blue_ants, vec[i]);
-        reset_colony(&blue_ants);
-        reset_colony(&red_ants);
-
-        t2 = omp_get_wtime();
+        food.amount = 0;
+        process_food(&food);// reset food spot
         
-        while(blue_ants.food_found_amount < 20 && red_ants.food_found_amount < 20){
-            process_colony(&blue_ants, red_ants.ant_position);
-            process_colony(&red_ants, blue_ants.ant_position);
-            if(omp_get_wtime()-t2 > 5) break;
-        }
+		time = simulate(&blue_ants, &red_ants, &food);
 
-        t1 = omp_get_wtime() - t2;
-
-        if(t1 < 60 && blue_ants.food_found_amount >= 20){
-            cout << "Indv: " << i << " blue: " << blue_ants.food_found_amount << " time: " << t1 << '\n'; 
-            cout << vec[i].decay << ' ' << vec[i].decay_amount << ' ' << vec[i].sick << ' ' << (int)vec[i].alarm << ' ' << (int)vec[i].food << ' ' << (int)vec[i].path << "\n\n";
+        cout << "I: " << i << " b: " << blue_ants.food_found_amount << " r: " << red_ants.food_found_amount <<" time: " << time << '\n'; 
             
-        }
     }
-    
+
+	// TODO : Generations, selection of best, breeding, if best is best: next is genocide, keep best in file
+
+ 
     return 0;
 }
 

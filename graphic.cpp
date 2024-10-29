@@ -36,7 +36,8 @@ unsigned char color[3];
 bool PLAY, Graphics;
 
 
-Colony blue_ants, red_ants;
+Colony blue_ants, red_ants;    
+Food food;
 
 
 void interface(){
@@ -51,25 +52,32 @@ void interface(){
         
         draw_nest(-0.5, -0.5, BLUE);
         draw_nest( 0.5, 0.5, RED);
+
+        setColor(color, GREEN);
+        retangle(convert_range(food.x), convert_range(food.y), 0.04, 0.04, color); // Food spot
         
 
         setColor(color, LIGHT_BLUE);
 
         for(int i=0; i<blue_ants.soldiers_amount; i++)
-            retangle(convert_range(blue_ants.ants[i].x), convert_range(blue_ants.ants[i].y), 0.02, 0.02, color);
+            if(blue_ants.ants[i].alive)
+                retangle(convert_range(blue_ants.ants[i].x), convert_range(blue_ants.ants[i].y), 0.03, 0.03, color);
 
         for(int i=blue_ants.soldiers_amount; i<blue_ants.ants_amount; i++)
-            triangle(convert_range(blue_ants.ants[i].x), convert_range(blue_ants.ants[i].y), 0.02, 0.02, color);
+            if(blue_ants.ants[i].alive)
+                triangle(convert_range(blue_ants.ants[i].x), convert_range(blue_ants.ants[i].y), 0.02, 0.02, color);
         
 
         
         setColor(color, LIGHT_RED);
         
         for(int i=0; i<red_ants.soldiers_amount; i++)
-            retangle(convert_range(red_ants.ants[i].x), convert_range(red_ants.ants[i].y), 0.02, 0.02, color);
+            if(red_ants.ants[i].alive)
+                retangle(convert_range(red_ants.ants[i].x), convert_range(red_ants.ants[i].y), 0.03, 0.03, color);
 
         for(int i=red_ants.soldiers_amount; i<red_ants.ants_amount; i++)
-            triangle(convert_range(red_ants.ants[i].x), convert_range(red_ants.ants[i].y), 0.02, 0.02, color);           
+            if(red_ants.ants[i].alive)
+                triangle(convert_range(red_ants.ants[i].x), convert_range(red_ants.ants[i].y), 0.02, 0.02, color);           
         
     }
     
@@ -91,8 +99,9 @@ void processInterface(){
     }
     
     if(PLAY){        
-        process_colony(&blue_ants, red_ants.ant_position);
-        process_colony(&red_ants, blue_ants.ant_position);
+        process_colony(&blue_ants, red_ants.ant_position, &food);
+        process_colony(&red_ants, blue_ants.ant_position, &food);
+        process_food(&food);
     }
     
     return;
@@ -150,13 +159,10 @@ int main(int argc, char** argv){
     Graphics = true; // visual simulation
     
     // --- creating ant colony --- //
-    setColor(color, BLUE);
-    blue_ants = create_colony(-0.5, -0.5, color, COLONY_SIZE, 10);
+    blue_ants = create_colony(-0.5, -0.5, COLONY_SIZE, 10);
+    red_ants = create_colony(0.5, 0.5, COLONY_SIZE, 10);
 
-    setColor(color, RED);
-    red_ants = create_colony(0.5, 0.5, color, COLONY_SIZE, 10);
-
-    create_food_map();
+    create_food_map(&food);
   
     //----- Create Window -----//
     glutInit(&argc, argv);

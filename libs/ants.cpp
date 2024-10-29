@@ -21,20 +21,19 @@
 
 bool food_map[900][900];
     
-Ant create_ant(int x, int y, unsigned char *color, int home_sick){
+Ant create_ant(int x, int y, int home_sick){
     Ant A;  
 
     A.x = x;
     A.y = y;
     A.theta = rand()%8; // moving direction
     A.initial_theta = A.theta;
-    A.r = color[0] ;
-    A.g = color[1] + 150; // change in color that make it easier to see the ants on the nest
-    A.b = color[2];
     A.found_food = false;
     A.intruder_detected = false;
     A.home_sick = home_sick;
-    A.lost =0;
+    A.lost =0;  
+    A.alive = true;
+    A.alarm_max=0;
 
     return A; 
 }
@@ -48,10 +47,12 @@ int convert_range2(float x){
     return output;
 }
 
-void move_ant(Ant *ant, bool ant_pos[900][900]){
+void move_ant(Ant *ant, char ant_pos[900][900], bool soldier_worker){
  
     // remove ant from previous location
-    ant_pos[ant->x][ant->y] = false; // location for ant vision
+    ant_pos[ant->x][ant->y] = 0; // location for ant vision
+
+    if(!ant->alive) return;
     
 	// move towards theta
     switch(ant->theta){
@@ -89,26 +90,26 @@ void move_ant(Ant *ant, bool ant_pos[900][900]){
 
 
 	// end of screen
-    if(ant->x < 1){ // top wall /\        /
-        ant->x = 1;
+    if(ant->y < 1){ // top wall /\        /
+        ant->y = 1;
         if(ant->theta == 1)ant->theta = 7;
         else if(ant->theta == 2)ant->theta = 6;
         else ant->theta = 5;
     
-    }else if(ant->x > 898){ // bottom wall \/
-        ant->x = 898;
+    }else if(ant->y > 898){ // bottom wall \/
+        ant->y = 898;
         if(ant->theta == 5)ant->theta = 3;
         else if(ant->theta == 6)ant->theta = 2;
         else ant->theta = 1;
     }
-	if(ant->y > 898){ // right wall  -->
-        ant->y = 898;
+	if(ant->x > 898){ // right wall  -->
+        ant->x = 898;
         if(ant->theta == 1)ant->theta = 3;
         else if(ant->theta == 0)ant->theta = 4;
         else ant->theta = 5;
     
-    }else if(ant->y < 1){ // left wall <--
-        ant->y = 1;
+    }else if(ant->x < 1){ // left wall <--
+        ant->x = 1;
         if(ant->theta == 3)ant->theta = 1;
         else if(ant->theta == 4)ant->theta = 0;
         else ant->theta = 7;
@@ -116,8 +117,10 @@ void move_ant(Ant *ant, bool ant_pos[900][900]){
     
    
     // add ant to new location
-    ant_pos[ant->x][ant->y] = true; 
-    
+    if(soldier_worker)
+        ant_pos[ant->x][ant->y] = 1; // worker
+    else 
+        ant_pos[ant->x][ant->y] = 2; // soldier
 }
 
 
@@ -156,7 +159,7 @@ void update_pheromones(Colony * colony){
                 if(colony->pheromones[i][j][k] > 0) colony->pheromones[i][j][k] -= colony->decay_amount;
 }
 
-Colony create_colony(float x, float y, unsigned char*color, int amount, int soldiers_amount){
+Colony create_colony(float x, float y, int amount, int soldiers_amount){
     int ant_x = convert_range2(x);
     int ant_y = convert_range2(y);
 
@@ -176,24 +179,24 @@ Colony create_colony(float x, float y, unsigned char*color, int amount, int sold
         swarm.soldiers_amount = soldiers_amount;
 
     Ant A;    
-    swarm.home_sick_max = 300;
+    swarm.home_sick_max = 500;
 
     for(int i=0; i<amount; i++){ // creates the ants of the colony 
-        A = create_ant(ant_x, ant_y, color, swarm.home_sick_max);
+        A = create_ant(ant_x, ant_y, swarm.home_sick_max);
         swarm.ants.push_back(A); 
     }
     
     #pragma omp parallel for
     for(int i=0; i<900; i++)
         for(int j=0; j<900; j++){
-            swarm.ant_position[i][j] = false; // map is empty of ants
+            swarm.ant_position[i][j] = 0; // map is empty of ants
             for(int k=0; k<3; k++){
                 swarm.pheromones[i][j][k]=0; // map is clear of pheromones
             }
         }
     
     swarm.draw_phero = false; // this option is off by default
-    swarm.decay_timer_max = 15; // timer to reduce the pheromones on the map
+    swarm.decay_timer_max = 16; // timer to reduce the pheromones on the map
     swarm.decay_timer = swarm.decay_timer_max;
     swarm.decay_amount = 1; // amount of pheromones reduced per cicle
 
@@ -204,7 +207,7 @@ Colony create_colony(float x, float y, unsigned char*color, int amount, int sold
     
     swarm.alarm_phero_amount = 50;
     swarm.food_phero_amount = 100;
-    swarm.path_phero_amount = 50;
+    swarm.path_phero_amount = 60;
 
     return swarm;
 }
@@ -219,6 +222,7 @@ void reset_colony(Colony *colony){
         colony->ants[i].y = y;
         colony->ants[i].found_food = false;
         colony->ants[i].intruder_detected = false;
+        colony->ants[i].alive = true;
     }
     
     colony->food_found_amount = 0;
@@ -235,38 +239,39 @@ void reset_colony(Colony *colony){
 }
 
 
-bool search_for_enemies(int x, int y, bool enemy_location[900][900]){
+bool search_for_enemies(int x, int y, char enemy_location[900][900]){
 
-    if(x+2 < 900 && x-2>0 && y+2 < 900 && y-2>0) // not near borders
-        for(int i=x-2; i<x+3; i++) 
-            for(int j=y-2; j<y+3; j++) // check for enemy ant 2 pixels away
+    if(x+3 < 900 && x-3>0 && y+3 < 900 && y-3>0) // not near borders
+        for(int i=x-3; i<=x+3; i++)
+            for(int j=y-3; j<=y+3; j++) // check for enemy ant 2 pixels away
                 if(enemy_location[i][j])
                     return true;
     return false;
 }
 
-void food_pocket(int x, int y){
-    for(int i=x-10; i<x+10; i++)
-        for(int j=y-10; j<y+10; j++)
-            food_map[i][j] = true;
+void toggle_food(Food *food){
+    for(int i=food->x-10; i<food->x+10; i++)
+        for(int j=food->y-10; j<food->y+10; j++)
+            food_map[i][j] = !food_map[i][j];
 }
 
-void create_food_map(){
+void create_food_map(Food*food){
     #pragma omp parallel for
     for(int i=0; i<900; i++) 
         for(int j=0; j<900; j++) 
             food_map[i][j] = false;
-    
-    //food_pocket(450, 450);
-    //food_pocket(300, 450);
-    //food_pocket(600, 450);
+
+    food->x = 450;
+    food->y = 450;
+    food->amount = 25;
+    toggle_food(food); // first food location
 }
 
 bool check_food_nearby(int x, int y){
 
-    if(x+2 < 900 && x-2>0 && y+2 < 900 && y-2>0) // not near borders
-        for(int i=x-2; i<x+3; i++) 
-            for(int j=y-2; j<y+3; j++) // check for food 2 pixels away
+    if(x+3 < 900 && x-3>0 && y+3 < 900 && y-3>0) // not near borders
+        for(int i=x-3; i<=x+3; i++) 
+            for(int j=y-3; j<=y+3; j++) // check for food 2 pixels away
                 if(food_map[i][j])
                     return true;
     return false;
@@ -308,7 +313,7 @@ bool find_pheromone(int x, int y, int *theta, unsigned char pheromones[900][900]
 
     int sumA=0, sumB=0, sumC=0; // sum of pheromones in it's path
     
-    if(!(x+3 < 900 && x-3>0 && y+3 < 900 && y-3>0)) return false; // he do be blind near border.
+    if(!(x+3 < 900 && x-3>0 && y+3 < 900 && y-3>0)) return true; // he do be blind near border.
     
     switch(*theta){
         // -->
@@ -568,7 +573,7 @@ void release_pheromone(unsigned char pheromones[900][900][3], int x, int y, int 
 }
 
 
-void ant_behaviour(Colony *colony, Ant *ant, unsigned char pheromones[900][900][3], bool enemy_location[900][900]){
+void ant_behaviour(Colony *colony, Ant *ant, unsigned char pheromones[900][900][3], char enemy_location[900][900], Food *food){
     int x = ant->x;
     int y = ant->y; 
     int nest_x = convert_range2(colony->nest_x);
@@ -602,12 +607,25 @@ void ant_behaviour(Colony *colony, Ant *ant, unsigned char pheromones[900][900][
         ant->found_food = true;
         if(ant->home_sick > 0) ant->home_sick = 0;
         ant->lost = 0; // even if lost it can try a bit
+        food->amount--;
     }
 
     // release pheromones
-    if(ant->intruder_detected)
+    if(ant->intruder_detected){
+        if(ant->alarm_max < 1000) ant->alarm_max++; // ant stop the alarm if can't reach home
+        else{
+            ant->intruder_detected = false;
+            ant->alarm_max = 0;
+        }        
         release_pheromone(pheromones, x, y, 2, colony->alarm_phero_amount); // alarm pheromone
-    if(ant->found_food)
+
+        for(int i=x-1; i<=x+1; i++)
+            for(int j=y-1; j<=y+1; j++)
+                if(enemy_location[i][j] == 2){  // kill ant if enemy soldier is next to it
+                    ant->alive = false;
+                }
+
+    }if(ant->found_food)
         release_pheromone(pheromones, x, y, 1, colony->food_phero_amount); // food pheromone
     if(ant->home_sick > 0){ // exploring
         release_pheromone(pheromones, x, y, 0, colony->path_phero_amount); // path pheromone
@@ -628,11 +646,21 @@ void ant_behaviour(Colony *colony, Ant *ant, unsigned char pheromones[900][900][
         
 }
 
-void soldier_behaviour(Colony *colony, Ant *ant, unsigned char pheromones[900][900][3], bool enemy_location[900][900]){
+void soldier_behaviour(Colony *colony, Ant *ant, unsigned char pheromones[900][900][3], char enemy_location[900][900]){
     
+    if(enemy_location[ant->x][ant->y] == 2){ // 2 soldiers in the same spot
+        ant->alive = false;
+        enemy_location[ant->x][ant->y] = 3; // inform enemy to kill self
+        return;
+    }
+    
+    if(colony->ant_position[ant->x][ant->y] == 3){ // enemy on the same spot died already
+        ant->alive = false;
+        return;
+    }
+
     // check for intruders nearby
     if(search_for_enemies(ant->x, ant->y, enemy_location)){
-        std::cout << "fucker sighted!\n";
         // face towards the enemy
         if(enemy_location[ant->x-1][ant->y] || enemy_location[ant->x-2][ant->y])
             ant->theta = 4; // <--
@@ -652,10 +680,10 @@ void soldier_behaviour(Colony *colony, Ant *ant, unsigned char pheromones[900][9
             ant->theta = 7; // --> V
         
         release_pheromone(pheromones, ant->x, ant->y, 0, colony->path_phero_amount); // path pheromone
+        release_pheromone(pheromones, ant->x, ant->y, 2, colony->alarm_phero_amount); // alarm pheromone
     
     // check for alarm pheromone, following it
     }else if(!follow_pheromone(ant->x, ant->y, &ant->theta, pheromones, 2)){ // if there's alarm phero, release path phero and follow
-        std::cout << "where's the fucker?\n";        
         release_pheromone(pheromones, ant->x, ant->y, 0, colony->path_phero_amount); // path pheromone
         
     // no alarm pheromone, try to follow path pheromone back home
@@ -666,21 +694,44 @@ void soldier_behaviour(Colony *colony, Ant *ant, unsigned char pheromones[900][9
 }
 
 
-void process_colony(Colony *colony, bool enemy_location[900][900]){
+void process_colony(Colony *colony, char enemy_location[900][900], Food *food){
     update_pheromones(colony);
     
     #pragma omp parallel for // workers
     for(int i=colony->soldiers_amount; i<colony->ants_amount; i++){
-        ant_behaviour(colony, &colony->ants[i], colony->pheromones, enemy_location);
-        move_ant(&colony->ants[i], colony->ant_position);
+        if(colony->ants[i].alive){
+            ant_behaviour(colony, &colony->ants[i], colony->pheromones, enemy_location, food);
+            move_ant(&colony->ants[i], colony->ant_position, true);
+        }
     }
     #pragma omp parallel for // soldiers
     for(int i=0; i<colony->soldiers_amount; i++){
-        soldier_behaviour(colony, &colony->ants[i], colony->pheromones, enemy_location);
-        move_ant(&colony->ants[i], colony->ant_position);
+        if(colony->ants[i].alive){
+            soldier_behaviour(colony, &colony->ants[i], colony->pheromones, enemy_location);
+            move_ant(&colony->ants[i], colony->ant_position, false);
+        }
     }
 }
 
+void process_food(Food *food){
+    if(food->amount > 0) return;
+
+    toggle_food(food); // remove food spot
+    
+    if(rand()%2){ // avoid placing food on nest
+        food->x = rand()%700+20; // top left region
+        food->y = rand()%700+20;
+        toggle_food(food); // add food spot
+    }else{
+        food->x = rand()%580+300; // bottom right region
+        food->y = rand()%580+300;
+        toggle_food(food);
+    }
+
+    food->amount = 25;
+        
+
+}
 
 
 
