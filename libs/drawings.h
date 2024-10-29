@@ -14,6 +14,9 @@
 #define BLUE  		25,25,255
 #define GREY  		125,125,125
 #define LIGHT_GREY 	200,200,200
+#define LIGHT_BLUE 	25,100,250
+#define LIGHT_RED   250,100,25
+
 
 
 

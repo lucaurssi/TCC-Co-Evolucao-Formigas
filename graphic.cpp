@@ -53,15 +53,24 @@ void interface(){
         draw_nest( 0.5, 0.5, RED);
         
 
-        for(int i=0; i<COLONY_SIZE; i++){ // draw ants
-	        setColor(color, blue_ants.ants[i].r, blue_ants.ants[i].g, blue_ants.ants[i].b);
-            triangle(convert_range(blue_ants.ants[i].x), convert_range(blue_ants.ants[i].y), 
-                blue_ants.ants[i].radius*2, blue_ants.ants[i].radius*2, color);
+        setColor(color, LIGHT_BLUE);
 
-	        setColor(color, red_ants.ants[i].r, red_ants.ants[i].g, red_ants.ants[i].b);
-            triangle(convert_range(red_ants.ants[i].x), convert_range(red_ants.ants[i].y), 
-                red_ants.ants[i].radius*2, red_ants.ants[i].radius*2, color);           
-        }
+        for(int i=0; i<blue_ants.soldiers_amount; i++)
+            retangle(convert_range(blue_ants.ants[i].x), convert_range(blue_ants.ants[i].y), 0.02, 0.02, color);
+
+        for(int i=blue_ants.soldiers_amount; i<blue_ants.ants_amount; i++)
+            triangle(convert_range(blue_ants.ants[i].x), convert_range(blue_ants.ants[i].y), 0.02, 0.02, color);
+        
+
+        
+        setColor(color, LIGHT_RED);
+        
+        for(int i=0; i<red_ants.soldiers_amount; i++)
+            retangle(convert_range(red_ants.ants[i].x), convert_range(red_ants.ants[i].y), 0.02, 0.02, color);
+
+        for(int i=red_ants.soldiers_amount; i<red_ants.ants_amount; i++)
+            triangle(convert_range(red_ants.ants[i].x), convert_range(red_ants.ants[i].y), 0.02, 0.02, color);           
+        
     }
     
     draw_bottom_menu(PLAY, Graphics,  blue_ants.draw_phero, red_ants.draw_phero);
@@ -142,10 +151,10 @@ int main(int argc, char** argv){
     
     // --- creating ant colony --- //
     setColor(color, BLUE);
-    blue_ants = create_colony(-0.5, -0.5, color, COLONY_SIZE);
+    blue_ants = create_colony(-0.5, -0.5, color, COLONY_SIZE, 10);
 
     setColor(color, RED);
-    red_ants = create_colony(0.5, 0.5, color, COLONY_SIZE);
+    red_ants = create_colony(0.5, 0.5, color, COLONY_SIZE, 10);
 
     create_food_map();
   

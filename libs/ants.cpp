@@ -17,12 +17,13 @@
 #include <omp.h>
 #include <iostream>
 
+#define DEBUG 1
+
 bool food_map[900][900];
     
 Ant create_ant(int x, int y, unsigned char *color, int home_sick){
     Ant A;  
 
-    A.radius = 0.01;
     A.x = x;
     A.y = y;
     A.theta = rand()%8; // moving direction
@@ -88,26 +89,26 @@ void move_ant(Ant *ant, bool ant_pos[900][900]){
 
 
 	// end of screen
-    if(ant->x < 0){ // top wall /\        /
-        ant->x = 0;
+    if(ant->x < 1){ // top wall /\        /
+        ant->x = 1;
         if(ant->theta == 1)ant->theta = 7;
         else if(ant->theta == 2)ant->theta = 6;
         else ant->theta = 5;
     
-    }else if(ant->x > 899){ // bottom wall \/
-        ant->x = 899;
+    }else if(ant->x > 898){ // bottom wall \/
+        ant->x = 898;
         if(ant->theta == 5)ant->theta = 3;
         else if(ant->theta == 6)ant->theta = 2;
         else ant->theta = 1;
     }
-	if(ant->y > 899){ // right wall  -->
-        ant->y = 899;
+	if(ant->y > 898){ // right wall  -->
+        ant->y = 898;
         if(ant->theta == 1)ant->theta = 3;
         else if(ant->theta == 0)ant->theta = 4;
         else ant->theta = 5;
     
-    }else if(ant->y < 0){ // left wall <--
-        ant->y = 0;
+    }else if(ant->y < 1){ // left wall <--
+        ant->y = 1;
         if(ant->theta == 3)ant->theta = 1;
         else if(ant->theta == 4)ant->theta = 0;
         else ant->theta = 7;
@@ -128,7 +129,7 @@ void update_pheromones(Colony * colony){
         for(int i=nest_x-33; i<nest_x+33; i++)
             for(int j=nest_y-33; j<nest_y+33; j++)
                 colony->pheromones[i][j][0] = 255;  
-        
+        /*
         for(int i=290; i<310; i++) // food spot phero
             for(int j=440; j<460; j++)
                 colony->pheromones[i][j][1] = 255;
@@ -139,7 +140,7 @@ void update_pheromones(Colony * colony){
 
         for(int i=590; i<610; i++)
             for(int j=440; j<460; j++)
-                colony->pheromones[i][j][1] = 255;
+                colony->pheromones[i][j][1] = 255;*/
     }              
 
 
@@ -155,11 +156,25 @@ void update_pheromones(Colony * colony){
                 if(colony->pheromones[i][j][k] > 0) colony->pheromones[i][j][k] -= colony->decay_amount;
 }
 
-Colony create_colony(float x, float y, unsigned char*color, int amount){
+Colony create_colony(float x, float y, unsigned char*color, int amount, int soldiers_amount){
     int ant_x = convert_range2(x);
     int ant_y = convert_range2(y);
-    
+
+        
     Colony swarm;
+   
+    if(amount<1){
+        if(DEBUG)
+            std::cout << "[DEBUG]: Invalid number of ants '"<< amount <<"', defaulting to 50.\n";
+        amount = 50;
+    }    
+    if (soldiers_amount > amount){
+        swarm.soldiers_amount = 0;
+        if(DEBUG)
+            std::cout << "[DEBUG]: Invalid soldiers_amount '" << soldiers_amount << "', setting variable to 0.\n";    
+    }else
+        swarm.soldiers_amount = soldiers_amount;
+
     Ant A;    
     swarm.home_sick_max = 300;
 
@@ -242,9 +257,9 @@ void create_food_map(){
         for(int j=0; j<900; j++) 
             food_map[i][j] = false;
     
-    food_pocket(450, 450);
-    food_pocket(300, 450);
-    food_pocket(600, 450);
+    //food_pocket(450, 450);
+    //food_pocket(300, 450);
+    //food_pocket(600, 450);
 }
 
 bool check_food_nearby(int x, int y){
@@ -613,13 +628,55 @@ void ant_behaviour(Colony *colony, Ant *ant, unsigned char pheromones[900][900][
         
 }
 
+void soldier_behaviour(Colony *colony, Ant *ant, unsigned char pheromones[900][900][3], bool enemy_location[900][900]){
+    
+    // check for intruders nearby
+    if(search_for_enemies(ant->x, ant->y, enemy_location)){
+        std::cout << "fucker sighted!\n";
+        // face towards the enemy
+        if(enemy_location[ant->x-1][ant->y] || enemy_location[ant->x-2][ant->y])
+            ant->theta = 4; // <--
+        else if(enemy_location[ant->x+1][ant->y] || enemy_location[ant->x+2][ant->y])
+            ant->theta = 0; // -->
+        else if(enemy_location[ant->x][ant->y-1] || enemy_location[ant->x][ant->y-2])
+            ant->theta = 2; // ^
+        else if(enemy_location[ant->x][ant->y+1] || enemy_location[ant->x][ant->y+2])
+            ant->theta = 6; // V
+        else if(enemy_location[ant->x-1][ant->y-1] || enemy_location[ant->x-1][ant->y-2] || enemy_location[ant->x-2][ant->y-1] || enemy_location[ant->x-2][ant->y-2])
+            ant->theta = 3; // <-- ^
+        else if(enemy_location[ant->x+1][ant->y-1] || enemy_location[ant->x+1][ant->y-2] || enemy_location[ant->x+2][ant->y-1] || enemy_location[ant->x+2][ant->y-2])
+            ant->theta = 1; // --> ^
+        else if(enemy_location[ant->x-1][ant->y+1] || enemy_location[ant->x-1][ant->y+2] || enemy_location[ant->x-2][ant->y+1] || enemy_location[ant->x-2][ant->y+2])
+            ant->theta = 5; // <-- V
+        else if(enemy_location[ant->x+1][ant->y+1] || enemy_location[ant->x+1][ant->y+2] || enemy_location[ant->x+2][ant->y+1] || enemy_location[ant->x+2][ant->y+2])
+            ant->theta = 7; // --> V
+        
+        release_pheromone(pheromones, ant->x, ant->y, 0, colony->path_phero_amount); // path pheromone
+    
+    // check for alarm pheromone, following it
+    }else if(!follow_pheromone(ant->x, ant->y, &ant->theta, pheromones, 2)){ // if there's alarm phero, release path phero and follow
+        std::cout << "where's the fucker?\n";        
+        release_pheromone(pheromones, ant->x, ant->y, 0, colony->path_phero_amount); // path pheromone
+        
+    // no alarm pheromone, try to follow path pheromone back home
+    }else
+        follow_pheromone(ant->x, ant->y, &ant->theta, pheromones, 0); // no alarm, try to follow path back home
+
+    return;
+}
+
 
 void process_colony(Colony *colony, bool enemy_location[900][900]){
     update_pheromones(colony);
     
-    #pragma omp parallel for
-    for(int i=0; i<colony->ants_amount; i++){
+    #pragma omp parallel for // workers
+    for(int i=colony->soldiers_amount; i<colony->ants_amount; i++){
         ant_behaviour(colony, &colony->ants[i], colony->pheromones, enemy_location);
+        move_ant(&colony->ants[i], colony->ant_position);
+    }
+    #pragma omp parallel for // soldiers
+    for(int i=0; i<colony->soldiers_amount; i++){
+        soldier_behaviour(colony, &colony->ants[i], colony->pheromones, enemy_location);
         move_ant(&colony->ants[i], colony->ant_position);
     }
 }

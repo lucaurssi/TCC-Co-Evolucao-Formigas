@@ -9,7 +9,6 @@
 #ifndef ANT
 #define ANT
 typedef struct _ant{
-    float radius;
     int  x, y, theta, initial_theta;
     unsigned char r,g,b;
     bool found_food, intruder_detected;
@@ -28,6 +27,7 @@ typedef struct _colony{
     bool draw_phero;
     float nest_x, nest_y;
     int ants_amount;
+    int soldiers_amount;
 
     int home_sick_max;
     int food_found_amount;
@@ -41,14 +41,8 @@ typedef struct _colony{
 }Colony;
 #endif
 
-//Ant create_ant();
-//int convert_range2(float x)
-//void move_ant();
-//void update_pheromones(Colony *colony);
-//void ant_behaviour();
 
-
-Colony create_colony(float x, float y, unsigned char*color, int amount);
+Colony create_colony(float x, float y, unsigned char*color, int amount, int soldiers_amount);
 void reset_colony(Colony *colony);
 void process_colony(Colony *colony, bool enemy_location[900][900]);
 void create_food_map();
