@@ -45,6 +45,7 @@ typedef struct _colony{
 #define FOOD
 typedef struct _food{
     int x,y,amount;
+    bool location; // true = top-left, false = bottom-right
 }Food;
 #endif
 

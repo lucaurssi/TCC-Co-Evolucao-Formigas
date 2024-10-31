@@ -4,12 +4,6 @@
  Advisor - Eduardo do Valle Simoes
 */
 
-#ifdef __APPLE__
-    #include <GLUT/glut.h>
-#else
-    #include <GL/glut.h>
-#endif
-#include "drawings.h"
 #include "ants.h"
 
 #include <math.h>
@@ -179,7 +173,7 @@ Colony create_colony(float x, float y, int amount, int soldiers_amount){
         swarm.soldiers_amount = soldiers_amount;
 
     Ant A;    
-    swarm.home_sick_max = 500;
+    swarm.home_sick_max = 550;
 
     for(int i=0; i<amount; i++){ // creates the ants of the colony 
         A = create_ant(ant_x, ant_y, swarm.home_sick_max);
@@ -250,6 +244,7 @@ bool search_for_enemies(int x, int y, char enemy_location[900][900]){
 }
 
 void toggle_food(Food *food){
+    std::cout << "toggle food: " << food->x << food->y<<'\n';
     for(int i=food->x-10; i<food->x+10; i++)
         for(int j=food->y-10; j<food->y+10; j++)
             food_map[i][j] = !food_map[i][j];
@@ -264,6 +259,7 @@ void create_food_map(Food*food){
     food->x = 450;
     food->y = 450;
     food->amount = 25;
+    food->location = true; // top-left at first
     toggle_food(food); // first food location
 }
 
@@ -717,16 +713,21 @@ void process_food(Food *food){
     if(food->amount > 0) return;
 
     toggle_food(food); // remove food spot
+    food->location = !food->location;
     
-    if(rand()%2){ // avoid placing food on nest
-        food->x = rand()%700+20; // top left region
-        food->y = rand()%700+20;
+    // avoid placing food on nest and move it arround
+    // this way giving more chance for conflict between nests
+    if(food->location){ 
+        food->x = rand()%250+201; // top left region 200 
+        food->y = rand()%250+451;
         toggle_food(food); // add food spot
     }else{
-        food->x = rand()%580+300; // bottom right region
-        food->y = rand()%580+300;
+        food->x = rand()%250+451; // bottom right region
+        food->y = rand()%250+201; // 
         toggle_food(food);
     }
+
+    std::cout << "food: "<< food->x << ' '<< food->y << '\n';
 
     food->amount = 25;
         

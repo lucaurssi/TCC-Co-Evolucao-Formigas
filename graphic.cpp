@@ -146,7 +146,7 @@ void timer(int){
 	glutPostRedisplay(); // call "interface" function again
 
     
-    glutTimerFunc(1000/30, timer, 0); // call "timer" function again after 1000/30 miliseconds
+    glutTimerFunc(1000/60, timer, 0); // call "timer" function again after 1000/30 miliseconds
 }
 
 
