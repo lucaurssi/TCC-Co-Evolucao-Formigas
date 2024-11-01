@@ -150,8 +150,10 @@ void update_pheromones(Colony * colony){
     for(int i=0; i<900; i++)
         for(int j=0; j<900; j++)
             for(int k=0; k<3; k++)
-                if(colony->pheromones[i][j][k] > 0) colony->pheromones[i][j][k] -= colony->decay_amount;
-}
+                if(colony->pheromones[i][j][k] > 0){ 
+                    if(colony->pheromones[i][j][k] >= colony->decay_amount ) colony->pheromones[i][j][k] -= colony->decay_amount;
+                    else colony->pheromones[i][j][k] = 0;
+}               }
 
 Colony create_colony(float x, float y, int amount, int soldiers_amount){
     int ant_x = convert_range2(x);
@@ -244,7 +246,7 @@ bool search_for_enemies(int x, int y, char enemy_location[900][900]){
 }
 
 void toggle_food(Food *food){
-    std::cout << "toggle food: " << food->x << food->y<<'\n';
+    
     for(int i=food->x-10; i<food->x+10; i++)
         for(int j=food->y-10; j<food->y+10; j++)
             food_map[i][j] = !food_map[i][j];
@@ -726,8 +728,6 @@ void process_food(Food *food){
         food->y = rand()%250+201; // 
         toggle_food(food);
     }
-
-    std::cout << "food: "<< food->x << ' '<< food->y << '\n';
 
     food->amount = 25;
         

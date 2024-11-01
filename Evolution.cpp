@@ -16,13 +16,19 @@ using namespace std;
 
 Colony blue_ants, red_ants;
 
-typedef struct _a{
+typedef struct _cadidate{
     unsigned short int decay, decay_amount, sick;
     unsigned char alarm, food, path;
 	int soldiers_amount, home_sick_max;
-}A;
+    int original_generation;
+    double time;
+}Candidate;
 
-void edit_colony(Colony *colony, A ind){
+typedef struct _gen{
+	vector<Candidate> candidates
+}Gen;
+
+void edit_colony(Colony *colony, Candidate ind){
 
     colony->decay_timer_max = ind.decay; // timer to reduce the pheromones on the map
     colony->decay_timer = colony->decay_timer_max;
@@ -41,23 +47,25 @@ void edit_colony(Colony *colony, A ind){
     return;
 }
 
-A generate_random_A(){
-    A ind;    
-    ind.decay = 1 + rand()%128;         // 1-128
-    ind.decay_amount = 1 + rand()%10;   // 1-10
-    ind.sick = 25 + rand()%976;         // 25 - 1000
+Candidate generate_random(int generation){
+    Candidate ind;    
+    ind.decay = 10 + rand()%200;        // 1-200
+    ind.decay_amount = 1 + rand()%20;   // 1-20
+    ind.sick = 450 + rand()%1051;       // 450 - 1500
 
-    ind.alarm = 20 + rand()%236;
-    ind.food = 20 + rand()%236; // 20 - 255
-    ind.path = 20 + rand()%236;
+    ind.alarm = 10 + rand()%236;
+    ind.food = 10 + rand()%236; // 10 - 255
+    ind.path = 10 + rand()%236;
 
 	ind.soldiers_amount = rand()%50; // 0-49
 	ind.home_sick_max = 51 + rand()%1500;	// 50 - 1500
 
+    ind.original_generation = generation;
+
     return ind;
 }
 
-double simulate(Colony* blue, Colony* red, Food* food){
+double simulate(Colony* blue, Colony* red, Food* food, int time_limit){
 	unsigned char count = 0;
 	double t2 = omp_get_wtime();
 
@@ -65,7 +73,7 @@ double simulate(Colony* blue, Colony* red, Food* food){
 
 		if(count == 255){ // every 255 cicles, check if the simulation passed one minute and stop it
 			count = 0;	  // this is to prevent an ineficient individual from taking too much time
-			if(omp_get_wtime() - t2 > 60) break;          
+			if(omp_get_wtime() - t2 > time_limit) break;          
 		}
 
 		process_colony(blue, red->ant_position, food);
@@ -77,39 +85,121 @@ double simulate(Colony* blue, Colony* red, Food* food){
 	return omp_get_wtime() - t2;
 }
 
+void simulate_generation(Colony* blue, Colony* red, Food* food, Gen color_generation, bool color, int num_per_gen){
+	cout << "Starting simulation of the current generation.\n";
+
+    for(int i=0; i<num_per_gen; i++){
+        int time = 0;
+		
+        if(color) edit_colony(blue, color_generation[i]);
+        else edit_colony(red, color_generation[i]); 
+		
+		cout << "Simulating " << i+1 << ": ";
+
+        for(int j=0; j<10; j++){ // simulate 10x
+            reset_colony(blue); // reset colonies
+            reset_colony(red);
+            food->amount = 0;
+            process_food(food);// reset food spot
+
+            time += simulate(blue, red, food, 120);
+        }
+        color_generation[i].time = time/10.0;
+		
+		cout << "Average time: " << color_generation[i].time << " Total time: " << time << '\n';
+    }
+}
+
+void create_generation(Colony* A, Colony* B, Food* food, Gen color_generation, int current_generation, int num_per_gen){
+	int i=1;
+	cout << "Generating colonies candidates... \n" ;
+	
+	while((int)color_generation.size() < num_per_gen){
+		candidate ind = generate_random(current_generation); // generate random parameters
+		edit_colony(A, ind); // apply parameters
+
+		reset_colony(A); // reset colonies
+		reset_colony(B);
+		
+		food->amount = 0;
+		process_food(food);// reset food spot
+		
+		double time = simulate(A, B, food, 5);
+
+		if(A->food_found_amount > -1) {
+			color_generation.push_back(ind);
+			cout << "Simulation "<< i << " success. Points: " << A->food_found_amount << " Time: " << time << '\n'; 		
+		}else
+			cout << "Simulation "<< i << " failed.  Points: " << A->food_found_amount << " Time: " << time << '\n';
+		
+		
+		i++;
+	}
+
+	cout << "\n * Generation created with " << num_per_gen << " candidates * \n\n";
+}
+
+
+int find_best(Gen color_generation){
+
+	double best_time = 999;
+	int best = 999;
+
+	for(int i=0; i<(int)color_generation.size(); i++){
+		if(color_generation[i].time < best_time){
+			best_time = color_generation[i].time;
+			best = i;
+		}
+	}
+
+	return best;
+}
 
 int main(/*int argc, char** argv*/){
 
     // ----- setup ----- //
     
-    double time;
-    //vector<A> vec;
-    A ind;
+    Gen blue_generation, red_generation; // generation of colonies
     Food food;
+    int current_generation_number = 1;
 
     blue_ants = create_colony(-0.5, -0.5, COLONY_SIZE, 10);
     red_ants = create_colony(0.5, 0.5, COLONY_SIZE, 10);
 
     create_food_map(&food);
+
+
     
+// ---- 1° blue generation ---- //
+	cout << "Blue Setup:\n";	
+	
+    create_generation(&blue_ants, &red_ants, &food, blue_generation, current_generation_number, 1);
+    
+    simulate_generation(&blue_ants, &red_ants, &food, blue_generation, true, 1); // true means blue
 
-    for(int i=0; i<100; i++){
-        ind = generate_random_A(); // generate random parameters
-        edit_colony(&blue_ants, ind); // apply parameters
+	int best = find_best(blue_generation);
+	edit_colony(&blue_ants, blue_generation[best]); // set the current best for blue ants
+	
+	cout << "Best of blue : " << blue_generation[best].time << '\n';
 
-        reset_colony(&blue_ants); // reset colonies
-        reset_colony(&red_ants);
-        
-        food.amount = 0;
-        process_food(&food);// reset food spot
-        
-		time = simulate(&blue_ants, &red_ants, &food);
+	// TODO :keep best in file
 
-        cout << "I: " << i << " b: " << blue_ants.food_found_amount << " r: " << red_ants.food_found_amount <<" time: " << time << '\n'; 
-            
-    }
 
-	// TODO : Generations, selection of best, breeding, if best is best: next is genocide, keep best in file
+    
+// ---- 1° red generation ---- //
+	cout << "Red Setup:\n";
+	// the red generation goes against the best of the blue
+    create_generation(&red_ants, &blue_ants, &food, red_generation, current_generation_number, 1);
+    
+    simulate_generation(&blue_ants, &red_ants, &food, red_generation, false, 1); // false means red
+
+	best = find_best(red_generation);
+	edit_colony(&red_ants, red_generation[best]);
+
+	
+	cout << "Best of red : " << red_generation[best].time << '\n';
+
+	// TODO :keep best in file
 
  
     return 0;
