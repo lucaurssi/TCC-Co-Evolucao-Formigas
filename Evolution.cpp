@@ -25,7 +25,7 @@ typedef struct _cadidate{
 }Candidate;
 
 typedef struct _gen{
-	vector<Candidate> candidates
+	vector<Candidate> candidates;
 }Gen;
 
 void edit_colony(Colony *colony, Candidate ind){
@@ -85,14 +85,14 @@ double simulate(Colony* blue, Colony* red, Food* food, int time_limit){
 	return omp_get_wtime() - t2;
 }
 
-void simulate_generation(Colony* blue, Colony* red, Food* food, Gen color_generation, bool color, int num_per_gen){
+void simulate_generation(Colony* blue, Colony* red, Food* food, Gen *color_generation, bool color, int num_per_gen){
 	cout << "Starting simulation of the current generation.\n";
 
     for(int i=0; i<num_per_gen; i++){
         int time = 0;
 		
-        if(color) edit_colony(blue, color_generation[i]);
-        else edit_colony(red, color_generation[i]); 
+        if(color) edit_colony(blue, color_generation->candidates[i]);
+        else edit_colony(red, color_generation->candidates[i]); 
 		
 		cout << "Simulating " << i+1 << ": ";
 
@@ -104,18 +104,18 @@ void simulate_generation(Colony* blue, Colony* red, Food* food, Gen color_genera
 
             time += simulate(blue, red, food, 120);
         }
-        color_generation[i].time = time/10.0;
+        color_generation->candidates[i].time = time/10.0;
 		
-		cout << "Average time: " << color_generation[i].time << " Total time: " << time << '\n';
+		cout << "Average time: " << color_generation->candidates[i].time << " Total time: " << time << '\n';
     }
 }
 
-void create_generation(Colony* A, Colony* B, Food* food, Gen color_generation, int current_generation, int num_per_gen){
+void create_generation(Colony* A, Colony* B, Food* food, Gen *color_generation, int current_generation, int num_per_gen){
 	int i=1;
 	cout << "Generating colonies candidates... \n" ;
 	
-	while((int)color_generation.size() < num_per_gen){
-		candidate ind = generate_random(current_generation); // generate random parameters
+	while((int)color_generation->candidates.size() < num_per_gen){
+		Candidate ind = generate_random(current_generation); // generate random parameters
 		edit_colony(A, ind); // apply parameters
 
 		reset_colony(A); // reset colonies
@@ -127,7 +127,7 @@ void create_generation(Colony* A, Colony* B, Food* food, Gen color_generation, i
 		double time = simulate(A, B, food, 5);
 
 		if(A->food_found_amount > -1) {
-			color_generation.push_back(ind);
+			color_generation->candidates.push_back(ind);
 			cout << "Simulation "<< i << " success. Points: " << A->food_found_amount << " Time: " << time << '\n'; 		
 		}else
 			cout << "Simulation "<< i << " failed.  Points: " << A->food_found_amount << " Time: " << time << '\n';
@@ -145,9 +145,9 @@ int find_best(Gen color_generation){
 	double best_time = 999;
 	int best = 999;
 
-	for(int i=0; i<(int)color_generation.size(); i++){
-		if(color_generation[i].time < best_time){
-			best_time = color_generation[i].time;
+	for(int i=0; i<(int)color_generation.candidates.size(); i++){
+		if(color_generation.candidates[i].time < best_time){
+			best_time = color_generation.candidates[i].time;
 			best = i;
 		}
 	}
@@ -173,14 +173,14 @@ int main(/*int argc, char** argv*/){
 // ---- 1° blue generation ---- //
 	cout << "Blue Setup:\n";	
 	
-    create_generation(&blue_ants, &red_ants, &food, blue_generation, current_generation_number, 1);
+    create_generation(&blue_ants, &red_ants, &food, &blue_generation, current_generation_number, 1);
     
-    simulate_generation(&blue_ants, &red_ants, &food, blue_generation, true, 1); // true means blue
+    simulate_generation(&blue_ants, &red_ants, &food, &blue_generation, true, 1); // true means blue
 
 	int best = find_best(blue_generation);
-	edit_colony(&blue_ants, blue_generation[best]); // set the current best for blue ants
+	edit_colony(&blue_ants, blue_generation.candidates[best]); // set the current best for blue ants
 	
-	cout << "Best of blue : " << blue_generation[best].time << '\n';
+	cout << "Best of blue : " << blue_generation.candidates[best].time << '\n';
 
 	// TODO :keep best in file
 
@@ -189,15 +189,15 @@ int main(/*int argc, char** argv*/){
 // ---- 1° red generation ---- //
 	cout << "Red Setup:\n";
 	// the red generation goes against the best of the blue
-    create_generation(&red_ants, &blue_ants, &food, red_generation, current_generation_number, 1);
+    create_generation(&red_ants, &blue_ants, &food, &red_generation, current_generation_number, 1);
     
-    simulate_generation(&blue_ants, &red_ants, &food, red_generation, false, 1); // false means red
+    simulate_generation(&blue_ants, &red_ants, &food, &red_generation, false, 1); // false means red
 
 	best = find_best(red_generation);
-	edit_colony(&red_ants, red_generation[best]);
+	edit_colony(&red_ants, red_generation.candidates[best]);
 
 	
-	cout << "Best of red : " << red_generation[best].time << '\n';
+	cout << "Best of red : " << red_generation.candidates[best].time << '\n';
 
 	// TODO :keep best in file
 
