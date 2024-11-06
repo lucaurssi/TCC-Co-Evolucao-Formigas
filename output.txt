@@ -1,0 +1,378 @@
+g++ Evolution.cpp -o app -Wall -Wextra -fopenmp libs/ants.cpp
+./app
+ *Generation 1*
+Blue Setup:
+Generating colonies candidates... 
+Simulation 1 failed.  Points: 23 Time: 60.0566
+Simulation 2 failed.  Points: 31 Time: 60.0267
+Simulation 3 failed.  Points: 60 Time: 60.0476
+Simulation 4 success. Points: 100 Time: 28.0544
+Simulation 5 success. Points: 100 Time: 29.6019
+Simulation 6 success. Points: 100 Time: 41.7808
+Simulation 7 success. Points: 72 Time: 60.0505
+Simulation 8 failed.  Points: 9 Time: 60.0465
+Simulation 9 success. Points: 100 Time: 48.9571
+Simulation 10 failed.  Points: 0 Time: 23.9981
+Simulation 11 failed.  Points: 0 Time: 9.21651
+Simulation 12 failed.  Points: 0 Time: 11.7961
+Simulation 13 success. Points: 100 Time: 23.417
+Simulation 14 success. Points: 100 Time: 37.6138
+Simulation 15 success. Points: 100 Time: 46.557
+Simulation 16 failed.  Points: 17 Time: 60.0485
+Simulation 17 failed.  Points: 0 Time: 19.33
+Simulation 18 success. Points: 100 Time: 11.6579
+Simulation 19 failed.  Points: 0 Time: 60.0431
+Simulation 20 failed.  Points: 0 Time: 60.0528
+Simulation 21 failed.  Points: 0 Time: 11.719
+Simulation 22 failed.  Points: 51 Time: 24.2049
+Simulation 23 failed.  Points: 0 Time: 60.0414
+Simulation 24 failed.  Points: 23 Time: 60.0075
+Simulation 25 success. Points: 74 Time: 60.0231
+Generation created with 10 candidates 
+
+ * Simulating generation * 
+Candidate 1; Average time: 33.5674s Average food: 100
+Candidate 2; Average time: 56.5739s Average food: 100
+Candidate 3; Average time: 38.4842s Average food: 100
+Candidate 4; Average time: 108.265s Average food: 100
+Candidate 5; Average time: 60.0152s Average food: 100
+Candidate 6; Average time: 17.7031s Average food: 91.5
+Candidate 7; Average time: 85.3106s Average food: 98.7
+Candidate 8; Average time: 64.7924s Average food: 98.5
+Candidate 9; Average time: 48.3919s Average food: 90.5
+Candidate 10; Average time: 176.287s Average food: 59.9
+ Best canditate: 1
+Best of blue, time: 33.5674s Food:100
+Red Setup:
+Generating colonies candidates... 
+Simulation 1 failed.  Points: 2 Time: 60.0162
+Simulation 2 success. Points: 100 Time: 6.00319
+Simulation 3 failed.  Points: 0 Time: 17.1717
+Simulation 4 failed.  Points: 0 Time: 12.3623
+Simulation 5 failed.  Points: 0 Time: 5.6472
+Simulation 6 success. Points: 100 Time: 28.5475
+Simulation 7 success. Points: 100 Time: 15.0844
+Simulation 8 failed.  Points: 26 Time: 12.8149
+Simulation 9 failed.  Points: 0 Time: 9.38753
+Simulation 10 failed.  Points: 0 Time: 5.2655
+Simulation 11 failed.  Points: 1 Time: 11.9739
+Simulation 12 failed.  Points: 47 Time: 11.8484
+Simulation 13 success. Points: 100 Time: 16.9374
+Simulation 14 failed.  Points: 0 Time: 21.3819
+Simulation 15 success. Points: 100 Time: 6.23958
+Simulation 16 failed.  Points: 6 Time: 60.0202
+Simulation 17 failed.  Points: 17 Time: 60.0282
+Simulation 18 failed.  Points: 24 Time: 3.83661
+Simulation 19 success. Points: 100 Time: 5.82863
+Simulation 20 failed.  Points: 0 Time: 60.0052
+Simulation 21 failed.  Points: 0 Time: 34.202
+Simulation 22 success. Points: 100 Time: 53.4325
+Simulation 23 failed.  Points: 0 Time: 9.22263
+Simulation 24 failed.  Points: 60 Time: 60.0087
+Simulation 25 failed.  Points: 27 Time: 7.27085
+Simulation 26 failed.  Points: 64 Time: 60.0094
+Simulation 27 failed.  Points: 0 Time: 4.71619
+Simulation 28 failed.  Points: 0 Time: 60.0464
+Simulation 29 success. Points: 100 Time: 20.8306
+Simulation 30 failed.  Points: 0 Time: 60.0087
+Simulation 31 failed.  Points: 1 Time: 5.0312
+Simulation 32 failed.  Points: 27 Time: 2.78326
+Simulation 33 failed.  Points: 0 Time: 52.0971
+Simulation 34 failed.  Points: 0 Time: 60.0062
+Simulation 35 failed.  Points: 0 Time: 60.0185
+Simulation 36 success. Points: 100 Time: 8.94747
+Simulation 37 failed.  Points: 0 Time: 60.0092
+Simulation 38 failed.  Points: 62 Time: 8.37516
+Simulation 39 failed.  Points: 0 Time: 4.17205
+Simulation 40 failed.  Points: 0 Time: 7.41306
+Simulation 41 failed.  Points: 13 Time: 60.0411
+Simulation 42 failed.  Points: 0 Time: 60.0156
+Simulation 43 success. Points: 100 Time: 18.1279
+Generation created with 10 candidates 
+
+ * Simulating generation * 
+Candidate 1; Average time: 7.52715s Average food: 100
+Candidate 2; Average time: 129.687s Average food: 85.3
+Candidate 3; Average time: 11.0168s Average food: 82.9
+Candidate 4; Average time: 9.07921s Average food: 100
+Candidate 5; Average time: 28.7772s Average food: 91.9
+Candidate 6; Average time: 9.12036s Average food: 94.7
+Candidate 7; Average time: 79.7894s Average food: 95.1
+Candidate 8; Average time: 71.657s Average food: 94.9
+Candidate 9; Average time: 15.2403s Average food: 100
+Candidate 10; Average time: 14.6565s Average food: 100
+ Best canditate: 1
+Best of red, time: 7.52715s Food:100
+
+ * 1° generation completed, starting continuous breeding and simulating loop * 
+
+
+ *Generation 2*
+blue:
+Breeding new generation
+ * Simulating generation * 
+Candidate 1; Average time: 9.27242s Average food: 26.9
+Candidate 2; Average time: 5.73757s Average food: 34.5
+Candidate 3; Average time: 11.291s Average food: 42
+Candidate 4; Average time: 68.7085s Average food: 62.8
+Candidate 5; Average time: 62.3399s Average food: 38.8
+Candidate 6; Average time: 4.45395s Average food: 30.3
+Candidate 7; Average time: 6.68663s Average food: 14.8
+Candidate 8; Average time: 50.7504s Average food: 44.1
+Candidate 9; Average time: 6.53326s Average food: 36
+Candidate 10; Average time: 64.4668s Average food: 24.6
+ Best canditate: 4
+red:
+Breeding new generation
+ * Simulating generation * 
+Candidate 1; Average time: 51.0367s Average food: 50.4
+Candidate 2; Average time: 137.927s Average food: 36.9
+Candidate 3; Average time: 31.1228s Average food: 45.4
+Candidate 4; Average time: 86.1169s Average food: 48.8
+Candidate 5; Average time: 12.4389s Average food: 59.7
+Candidate 6; Average time: 16.6324s Average food: 47.6
+Candidate 7; Average time: 58.5981s Average food: 28.6
+Candidate 8; Average time: 111.601s Average food: 9.8
+Candidate 9; Average time: 48.6041s Average food: 91.4
+Candidate 10; Average time: 97.9261s Average food: 40.1
+ Best canditate: 9
+
+ *Generation 3*
+blue:
+Breeding new generation
+ * Simulating generation * 
+Candidate 1; Average time: 11.4935s Average food: 29.3
+Candidate 2; Average time: 21.6079s Average food: 36.4
+Candidate 3; Average time: 34.0039s Average food: 24.1
+Candidate 4; Average time: 28.95s Average food: 42.1
+Candidate 5; Average time: 74.7836s Average food: 32.4
+Candidate 6; Average time: 8.59278s Average food: 23.4
+Candidate 7; Average time: 21.0891s Average food: 27.5
+Candidate 8; Average time: 47.7587s Average food: 16.7
+Candidate 9; Average time: 25.3878s Average food: 24.5
+Candidate 10; Average time: 51.5359s Average food: 25.8
+ Best canditate: 4
+red:
+Breeding new generation
+ * Simulating generation * 
+Candidate 1; Average time: 46.2142s Average food: 70.6
+Candidate 2; Average time: 33.5004s Average food: 92.6
+Candidate 3; Average time: 91.5045s Average food: 55.7
+Candidate 4; Average time: 70.0233s Average food: 47.8
+Candidate 5; Average time: 79.8149s Average food: 62.4
+Candidate 6; Average time: 40.1692s Average food: 76
+Candidate 7; Average time: 61.5807s Average food: 82
+Candidate 8; Average time: 85.6547s Average food: 61.5
+Candidate 9; Average time: 47.0689s Average food: 86.1
+Candidate 10; Average time: 114.197s Average food: 44
+ Best canditate: 2
+
+ *Generation 4*
+blue:
+Breeding new generation
+ * Simulating generation * 
+Candidate 1; Average time: 31.0938s Average food: 20.4
+Candidate 2; Average time: 58.0492s Average food: 25.2
+Candidate 3; Average time: 53.6285s Average food: 23.9
+Candidate 4; Average time: 46.2373s Average food: 45.9
+Candidate 5; Average time: 65.6758s Average food: 47
+Candidate 6; Average time: 13.6626s Average food: 30.3
+Candidate 7; Average time: 14.7619s Average food: 43.6
+Candidate 8; Average time: 27.8786s Average food: 30.8
+Candidate 9; Average time: 48.7567s Average food: 21.8
+Candidate 10; Average time: 44.9209s Average food: 29.4
+ Best canditate: 5
+red:
+Breeding new generation
+ * Simulating generation * 
+Candidate 1; Average time: 73.744s Average food: 83.3
+Candidate 2; Average time: 50.5773s Average food: 89
+Candidate 3; Average time: 93.953s Average food: 64.2
+Candidate 4; Average time: 20.4146s Average food: 84.7
+Candidate 5; Average time: 63.1627s Average food: 81.8
+Candidate 6; Average time: 29.323s Average food: 85.4
+Candidate 7; Average time: 38.8031s Average food: 91.8
+Candidate 8; Average time: 99.6838s Average food: 54.5
+Candidate 9; Average time: 31.4136s Average food: 96.5
+Candidate 10; Average time: 43.5187s Average food: 98.5
+ Best canditate: 10
+
+ *Generation 5*
+blue:
+Breeding new generation
+ * Simulating generation * 
+Candidate 1; Average time: 22.292s Average food: 42.1
+Candidate 2; Average time: 29.1156s Average food: 30.9
+Candidate 3; Average time: 18.02s Average food: 42.5
+Candidate 4; Average time: 82.582s Average food: 44.1
+Candidate 5; Average time: 42.4934s Average food: 51.9
+Candidate 6; Average time: 63.2995s Average food: 43.6
+Candidate 7; Average time: 71.7747s Average food: 44.8
+Candidate 8; Average time: 59.2036s Average food: 46.2
+Candidate 9; Average time: 24.6191s Average food: 43.4
+Candidate 10; Average time: 51.1194s Average food: 72.3
+ Best canditate: 10
+red:
+Breeding new generation
+ * Simulating generation * 
+Candidate 1; Average time: 61.1362s Average food: 78.2
+Candidate 2; Average time: 100.992s Average food: 77.5
+Candidate 3; Average time: 65.966s Average food: 76.8
+Candidate 4; Average time: 48.5834s Average food: 80.2
+Candidate 5; Average time: 54.4057s Average food: 80.8
+Candidate 6; Average time: 60.6977s Average food: 79.6
+Candidate 7; Average time: 60.6816s Average food: 88
+Candidate 8; Average time: 49.1944s Average food: 80.4
+Candidate 9; Average time: 21.4379s Average food: 100
+Candidate 10; Average time: 27.1781s Average food: 86.1
+ Best canditate: 9
+
+ *Generation 6*
+blue:
+Breeding new generation
+ * Simulating generation * 
+Candidate 1; Average time: 44.5338s Average food: 37.4
+Candidate 2; Average time: 32.3628s Average food: 43.1
+Candidate 3; Average time: 30.4271s Average food: 28.4
+Candidate 4; Average time: 62.6455s Average food: 38
+Candidate 5; Average time: 53.3824s Average food: 32.5
+Candidate 6; Average time: 45.9683s Average food: 28.1
+Candidate 7; Average time: 64.197s Average food: 38
+Candidate 8; Average time: 23.5307s Average food: 31.9
+Candidate 9; Average time: 31.0011s Average food: 26.3
+Candidate 10; Average time: 35.4554s Average food: 27.6
+ Best canditate: 2
+red:
+Breeding new generation
+ * Simulating generation * 
+Candidate 1; Average time: 45.1035s Average food: 89.8
+Candidate 2; Average time: 32.3436s Average food: 96.1
+Candidate 3; Average time: 12.2692s Average food: 93.1
+Candidate 4; Average time: 60.3259s Average food: 92.5
+Candidate 5; Average time: 25.9584s Average food: 91.6
+Candidate 6; Average time: 28.0284s Average food: 78.1
+Candidate 7; Average time: 59.3597s Average food: 74.2
+Candidate 8; Average time: 19.851s Average food: 100
+Candidate 9; Average time: 22.77s Average food: 92.4
+Candidate 10; Average time: 40.0846s Average food: 94.6
+ Best canditate: 8
+
+ *Generation 7*
+blue:
+Breeding new generation
+ * Simulating generation * 
+Candidate 1; Average time: 70.1513s Average food: 21.6
+Candidate 2; Average time: 25.7635s Average food: 25.4
+Candidate 3; Average time: 55.5281s Average food: 35
+Candidate 4; Average time: 29.0766s Average food: 36.9
+Candidate 5; Average time: 26.4862s Average food: 21.5
+Candidate 6; Average time: 50.3877s Average food: 51.1
+Candidate 7; Average time: 12.8616s Average food: 53.5
+Candidate 8; Average time: 16.3871s Average food: 37.1
+Candidate 9; Average time: 27.9645s Average food: 29
+Candidate 10; Average time: 26.733s Average food: 24.4
+ Best canditate: 7
+red:
+Breeding new generation
+ * Simulating generation * 
+Candidate 1; Average time: 13.4043s Average food: 100
+Candidate 2; Average time: 45.9309s Average food: 83.8
+Candidate 3; Average time: 22.5567s Average food: 98.4
+Candidate 4; Average time: 13.5924s Average food: 91.4
+Candidate 5; Average time: 37.6738s Average food: 94.3
+Candidate 6; Average time: 49.8442s Average food: 83.2
+Candidate 7; Average time: 67.9338s Average food: 62
+Candidate 8; Average time: 78.861s Average food: 71.4
+Candidate 9; Average time: 31.873s Average food: 83.3
+Candidate 10; Average time: 43.5624s Average food: 93.4
+ Best canditate: 1
+
+ *Generation 8*
+blue:
+Breeding new generation
+ * Simulating generation * 
+Candidate 1; Average time: 81.662s Average food: 38
+Candidate 2; Average time: 28.4571s Average food: 22.8
+Candidate 3; Average time: 37.7288s Average food: 33.7
+Candidate 4; Average time: 16.217s Average food: 32.2
+Candidate 5; Average time: 13.1752s Average food: 33.2
+Candidate 6; Average time: 10.5767s Average food: 30.2
+Candidate 7; Average time: 59.4468s Average food: 24.4
+Candidate 8; Average time: 32.605s Average food: 26.5
+Candidate 9; Average time: 37.1299s Average food: 24.8
+Candidate 10; Average time: 46.3989s Average food: 34.6
+ Best canditate: 1
+red:
+Breeding new generation
+ * Simulating generation * 
+Candidate 1; Average time: 33.4041s Average food: 81.6
+Candidate 2; Average time: 34.633s Average food: 98.9
+Candidate 3; Average time: 61.6124s Average food: 75.9
+Candidate 4; Average time: 50.2324s Average food: 93.5
+Candidate 5; Average time: 64.1559s Average food: 79.3
+Candidate 6; Average time: 42.9492s Average food: 52.5
+Candidate 7; Average time: 63.0754s Average food: 77.1
+Candidate 8; Average time: 28.8517s Average food: 90.9
+Candidate 9; Average time: 17.5997s Average food: 93.6
+Candidate 10; Average time: 72.7744s Average food: 84.3
+ Best canditate: 2
+
+ *Generation 9*
+blue:
+Breeding new generation
+ * Simulating generation * 
+Candidate 1; Average time: 36.0799s Average food: 50.2
+Candidate 2; Average time: 55.4467s Average food: 35
+Candidate 3; Average time: 51.1807s Average food: 52.3
+Candidate 4; Average time: 47.7994s Average food: 54.7
+Candidate 5; Average time: 38.0217s Average food: 43.8
+Candidate 6; Average time: 43.3529s Average food: 43.6
+Candidate 7; Average time: 57.8047s Average food: 32.1
+Candidate 8; Average time: 29.1046s Average food: 26
+Candidate 9; Average time: 45.3031s Average food: 42.3
+Candidate 10; Average time: 43.5973s Average food: 38
+ Best canditate: 4
+red:
+Breeding new generation
+ * Simulating generation * 
+Candidate 1; Average time: 33.9141s Average food: 98.4
+Candidate 2; Average time: 42.3351s Average food: 90.3
+Candidate 3; Average time: 16.0915s Average food: 96.2
+Candidate 4; Average time: 48.6254s Average food: 92.2
+Candidate 5; Average time: 19.0542s Average food: 100
+Candidate 6; Average time: 35.8823s Average food: 86.7
+Candidate 7; Average time: 19.0069s Average food: 90
+Candidate 8; Average time: 10.4648s Average food: 87.3
+Candidate 9; Average time: 44.1387s Average food: 86
+Candidate 10; Average time: 25.3716s Average food: 100
+ Best canditate: 5
+
+ *Generation 10*
+blue:
+Breeding new generation
+ * Simulating generation * 
+Candidate 1; Average time: 42.3235s Average food: 26.7
+Candidate 2; Average time: 36.7683s Average food: 27.3
+Candidate 3; Average time: 13.6085s Average food: 15.1
+Candidate 4; Average time: 12.461s Average food: 30.6
+Candidate 5; Average time: 33.9184s Average food: 26.3
+Candidate 6; Average time: 29.9538s Average food: 30.8
+Candidate 7; Average time: 13.6845s Average food: 44.9
+Candidate 8; Average time: 16.0775s Average food: 24.6
+Candidate 9; Average time: 28.8916s Average food: 51.6
+Candidate 10; Average time: 14.4166s Average food: 40.1
+ Best canditate: 9
+red:
+Breeding new generation
+ * Simulating generation * 
+Candidate 1; Average time: 34.212s Average food: 97.9
+Candidate 2; Average time: 55.7678s Average food: 79.4
+Candidate 3; Average time: 20.8083s Average food: 93.2
+Candidate 4; Average time: 68.6655s Average food: 82.8
+Candidate 5; Average time: 41.3564s Average food: 84.8
+Candidate 6; Average time: 33.4912s Average food: 92.8
+Candidate 7; Average time: 39.1932s Average food: 86.4
+Candidate 8; Average time: 70.9525s Average food: 83.9
+Candidate 9; Average time: 30.3641s Average food: 86
+Candidate 10; Average time: 26.0801s Average food: 100
+ Best canditate: 10
