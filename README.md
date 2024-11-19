@@ -8,7 +8,7 @@ Orientador:
 
 
 Áreas relacionadas:
-	Computação Bioinspirada, Sistemas Evolutivos
+	Computação Bioinspirada, Sistemas Evolutivos, Co Evolução
 
 ## Instalação
 
