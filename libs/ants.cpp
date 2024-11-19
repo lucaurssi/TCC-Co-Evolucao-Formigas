@@ -11,7 +11,7 @@
 #include <omp.h>
 #include <iostream>
 
-#define DEBUG 1
+#define DEBUG 0
 
 bool food_map[900][900];
     
@@ -141,7 +141,8 @@ void update_pheromones(Colony * colony){
                 if(colony->pheromones[i][j][k] > 0){ 
                     if(colony->pheromones[i][j][k] >= colony->decay_amount ) colony->pheromones[i][j][k] -= colony->decay_amount;
                     else colony->pheromones[i][j][k] = 0;
-}               }
+				}
+}
 
 Colony create_colony(float x, float y, int amount, int soldiers_amount){
     int ant_x = convert_range2(x);
@@ -214,7 +215,7 @@ void reset_colony(Colony *colony){
     #pragma omp parallel for
     for(int i=0; i<900; i++)
         for(int j=0; j<900; j++){
-            colony->ant_position[i][j] = false; // map is empty of ants
+            colony->ant_position[i][j] = 0; // map is empty of ants
             for(int k=0; k<3; k++){
                 colony->pheromones[i][j][k]=0; // map is clear of pheromones
             }
@@ -241,6 +242,7 @@ void toggle_food(Food *food){
 }
 
 void create_food_map(Food*food){
+
     #pragma omp parallel for
     for(int i=0; i<900; i++) 
         for(int j=0; j<900; j++) 

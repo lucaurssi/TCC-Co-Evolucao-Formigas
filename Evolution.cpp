@@ -17,6 +17,7 @@
 using namespace std;
 
 #define COLONY_SIZE 50	
+#define DEBUG 0
 
 Colony blue_ants, red_ants;
 
@@ -76,17 +77,19 @@ Candidate generate_random(int generation){
 int simulate(Colony* blue, Colony* red, Food* food, int time_limit){
 	int count = 0;
 
+	double t2 = omp_get_wtime();
+	
 	while(blue->food_found_amount < 100 && red->food_found_amount < 100){
 
 		if(count++ > time_limit) // time_limit is the number of cicles
 			break;	  // this is to prevent an ineficient individual from taking too much time
-			  
+		 
 		process_colony(blue, red->ant_position, food);
 		process_colony(red, blue->ant_position, food);
 		process_food(food);
 		
 	}
-
+	if(DEBUG) cout << "time: "<<omp_get_wtime() - t2 << "s ";
 	return count;
 }
 
