@@ -8,11 +8,10 @@ Computação Bioinspirada, Sistemas Evolutivos
 Luca Gomes Urssi
 
 
-comments
 
-time -> cicles
-
-Readme
 
 GPU 
 
+DEBUG off
+
+Readme

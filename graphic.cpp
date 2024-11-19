@@ -148,7 +148,34 @@ void timer(int){
     glutTimerFunc(1000/60, timer, 0); // call "timer" function again after 1000/30 miliseconds
 }
 
+// A cadidate is a group of variables that will be tested
+typedef struct _cadidate{
+    unsigned short int decay, decay_amount, sick;
+    unsigned char alarm, food, path;
+	int soldiers_amount, home_sick_max;
+    int original_generation;
+    double time;
+    float food_avg;
+}Candidate;
 
+void edit_colony(Colony *colony, Candidate ind){
+
+    colony->decay_timer_max = ind.decay; // timer to reduce the pheromones on the map
+    colony->decay_timer = colony->decay_timer_max;
+
+    colony->decay_amount = ind.decay_amount; // amount of pheromones reduced per cicle
+
+    colony->alarm_phero_amount = ind.alarm;
+    colony->food_phero_amount = ind.food; // types of pheromones and their amount
+    colony->path_phero_amount = ind.path;
+    
+    colony->home_sick_max = ind.sick; // ants go home when zero
+
+	colony->soldiers_amount = ind.soldiers_amount;
+	colony->home_sick_max = ind.home_sick_max;
+
+    return;
+}
 
 int main(int argc, char** argv){
     
@@ -158,8 +185,32 @@ int main(int argc, char** argv){
     Graphics = true; // visual simulation
     
     // --- creating ant colony --- //
+    Candidate A;
+    
+    A.decay = 92;
+    A.decay_amount = 4;
+    A.sick = 1239;
+    A.alarm = 79; 
+    A.food = 185;
+    A.path = 224;
+	A.soldiers_amount = 31;
+	A.home_sick_max = 1315;
+    
     blue_ants = create_colony(-0.5, -0.5, COLONY_SIZE, 10);
+    edit_colony(&blue_ants, A);
+    
+    
+    A.decay = 144;
+    A.decay_amount = 11;
+    A.sick = 1096;
+    A.alarm = 80; 
+    A.food = 223;
+    A.path = 194;
+	A.soldiers_amount = 33;
+	A.home_sick_max = 853;
+	
     red_ants = create_colony(0.5, 0.5, COLONY_SIZE, 10);
+    edit_colony(&red_ants, A);
 
     create_food_map(&food);
   
