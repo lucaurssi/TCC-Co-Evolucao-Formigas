@@ -1,16 +1,13 @@
 ## Coevolução entre duas Espécies de Formigas Artificiais Competindo por Recursos
 
 Author:
-	
 	Luca Gomes Urssi
 
 Orientador:
-
 	Eduardo do Valle Simoes
 
 
 Áreas relacionadas:
-	
 	Computação Bioinspirada, Sistemas Evolutivos
 
 ## Instalação
