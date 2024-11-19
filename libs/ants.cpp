@@ -126,19 +126,7 @@ void update_pheromones(Colony * colony){
         for(int i=nest_x-33; i<nest_x+33; i++)
             for(int j=nest_y-33; j<nest_y+33; j++)
                 colony->pheromones[i][j][0] = 255;  
-        /*
-        for(int i=290; i<310; i++) // food spot phero
-            for(int j=440; j<460; j++)
-                colony->pheromones[i][j][1] = 255;
-
-        for(int i=440; i<460; i++)
-            for(int j=440; j<460; j++)
-                colony->pheromones[i][j][1] = 255;
-
-        for(int i=590; i<610; i++)
-            for(int j=440; j<460; j++)
-                colony->pheromones[i][j][1] = 255;*/
-    }              
+    }           
 
 
     colony->decay_timer -= 1;

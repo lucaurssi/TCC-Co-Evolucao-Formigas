@@ -2,6 +2,8 @@
  TCC - Coevolucao entre duas Especies de Formigas Artificiais Competindo por Recursos
  Author - Luca Gomes Urssi
  Advisor - Eduardo do Valle Simoes
+ 
+ This file simulates two colonies of ants using the ants.h library and evolutionary systems theory without graphics
 */
 
 #include "libs/ants.h"
@@ -18,6 +20,7 @@ using namespace std;
 
 Colony blue_ants, red_ants;
 
+// A cadidate is a group of variables that will be tested
 typedef struct _cadidate{
     unsigned short int decay, decay_amount, sick;
     unsigned char alarm, food, path;
@@ -27,6 +30,7 @@ typedef struct _cadidate{
     float food_avg;
 }Candidate;
 
+// One generation is composed of a group of candidates
 typedef struct _gen{
 	vector<Candidate> candidates;
 }Gen;
@@ -68,26 +72,26 @@ Candidate generate_random(int generation){
     return ind;
 }
 
-double simulate(Colony* blue, Colony* red, Food* food, int time_limit){
-	unsigned char count = 0;
-	double t2 = omp_get_wtime();
+
+int simulate(Colony* blue, Colony* red, Food* food, int time_limit){
+	int count = 0;
 
 	while(blue->food_found_amount < 100 && red->food_found_amount < 100){
 
-		if(count == 255){ // every 255 cicles, check if the simulation passed one minute and stop it
-			count = 0;	  // this is to prevent an ineficient individual from taking too much time
-			if(omp_get_wtime() - t2 > time_limit) break;          
-		}
-
+		if(count++ > time_limit) // time_limit is the number of cicles
+			break;	  // this is to prevent an ineficient individual from taking too much time
+			  
 		process_colony(blue, red->ant_position, food);
 		process_colony(red, blue->ant_position, food);
 		process_food(food);
-		count++;
+		
 	}
 
-	return omp_get_wtime() - t2;
+	return count;
 }
 
+
+// simulate every candidate of the generation ten times each, recording the average time and food collected
 void simulate_generation(Colony* blue, Colony* red, Food* food, Gen *color_generation, bool color, int num_per_gen){
 	cout << " * Simulating generation * \n";
 
@@ -106,20 +110,21 @@ void simulate_generation(Colony* blue, Colony* red, Food* food, Gen *color_gener
             food->amount = 0;
             process_food(food);// reset food spot
 
-            time += simulate(blue, red, food, 180);
+            time += simulate(blue, red, food, 350000);
             if(color) food_avg += blue->food_found_amount;
            	else food_avg += red->food_found_amount;           		
         }
         color_generation->candidates[i].time = time/10.0;
         color_generation->candidates[i].food_avg = food_avg/10.0;
 		
-		cout << "Average time: " << color_generation->candidates[i].time << "s Average food: " << food_avg/10.0 << '\n';
+		cout << "Average cicles: " << color_generation->candidates[i].time << " Average food: " << food_avg/10.0 << '\n';
     }
 }
 
+
 /*
 	this function generates random parameters and simulates than
-	if the time it takes to simulate is lower than "time_limit" seconds
+	if the time it takes to simulate is lower than "time_limit" cicles
 	and the colected amount of food is above 70
 	the candidate is added to the vector
 */
@@ -137,13 +142,13 @@ void create_generation(Colony* A, Colony* B, Food* food, Gen *color_generation, 
 		food->amount = 0;
 		process_food(food);// reset food spot
 		
-		double time = simulate(A, B, food, time_limit); // allow up to -- seconds of simulation
+		double time = simulate(A, B, food, time_limit); // allow up to -- cicles of simulation
 
 		if(A->food_found_amount > 70) { // requires the colony to gather at least 71 points food to qualify
 			color_generation->candidates.push_back(ind);
-			cout << "Simulation "<< i << " success. Points: " << A->food_found_amount << " Time: " << time << '\n'; 		
+			cout << "Simulation "<< i << " success. Points: " << A->food_found_amount << " Cicles: " << time << '\n'; 		
 		}else
-			cout << "Simulation "<< i << " failed.  Points: " << A->food_found_amount << " Time: " << time << '\n';
+			cout << "Simulation "<< i << " failed.  Points: " << A->food_found_amount << " Cicles: " << time << '\n';
 		
 		
 		i++;
@@ -173,6 +178,10 @@ int find_best(Gen color_generation){
 	return best;
 }
 
+/*
+ this function writes on a text file the current best canditate of the generation, 
+ the text file is created inside the respective colored folder 
+*/
 void document_generation_best(string color, Candidate A, int generation){
 
     ofstream file;
@@ -270,26 +279,29 @@ int main(/*int argc, char** argv*/){
     int candidates_per_generation = 10;
 	cout << " *Generation 1*\n";
     
+    
 // ---- 1° blue generation ---- //
+
 	cout << "Blue Setup:\n";	
 	
-    create_generation(&blue_ants, &red_ants, &food, &blue_generation, current_generation_number, candidates_per_generation, 60);
+    create_generation(&blue_ants, &red_ants, &food, &blue_generation, current_generation_number, candidates_per_generation, 175000);
     
     simulate_generation(&blue_ants, &red_ants, &food, &blue_generation, true, candidates_per_generation); // true means blue
 
 	int blue_best = find_best(blue_generation);
 	edit_colony(&blue_ants, blue_generation.candidates[blue_best]); // set the current best for blue ants
 	
-	cout << "Best of blue, time: " << blue_generation.candidates[blue_best].time << "s Food:" << blue_generation.candidates[blue_best].food_avg << '\n';
+	cout << "Best of blue, Cicles: " << blue_generation.candidates[blue_best].time << " Food:" << blue_generation.candidates[blue_best].food_avg << '\n';
 
 	// create a file with this geration best's values
 	document_generation_best("blue", blue_generation.candidates[blue_best], current_generation_number);
 	
     
 // ---- 1° red generation ---- //
+
 	cout << "Red Setup:\n";
 	// the red generation goes against the best of the blue
-    create_generation(&red_ants, &blue_ants, &food, &red_generation, current_generation_number, candidates_per_generation, 60);
+    create_generation(&red_ants, &blue_ants, &food, &red_generation, current_generation_number, candidates_per_generation, 175000);
     
     simulate_generation(&blue_ants, &red_ants, &food, &red_generation, false, candidates_per_generation); // false means red
 
@@ -297,10 +309,14 @@ int main(/*int argc, char** argv*/){
 	edit_colony(&red_ants, red_generation.candidates[red_best]);
 
 	
-	cout << "Best of red, time: " << red_generation.candidates[red_best].time<< "s Food:" << red_generation.candidates[red_best].food_avg << '\n';
+	cout << "Best of red, Cicles: " << red_generation.candidates[red_best].time<< " Food:" << red_generation.candidates[red_best].food_avg << '\n';
 
 	document_generation_best("red", red_generation.candidates[red_best], current_generation_number);
 
+
+
+ // --- other generations --- //
+ 
 	cout << "\n * 1° generation completed, starting continuous breeding and simulating loop * \n\n";
 
  	int k=1;

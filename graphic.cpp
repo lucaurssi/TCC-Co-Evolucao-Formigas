@@ -2,6 +2,8 @@
  TCC - Coevolucao entre duas Especies de Formigas Artificiais Competindo por Recursos
  Author - Luca Gomes Urssi
  Advisor - Eduardo do Valle Simoes
+
+ This file graphically simulates two colonies of ants using the ants.h and drwawings.h 
 */
 
 #ifdef __APPLE__
@@ -23,14 +25,6 @@ using namespace std;
 #define DEBUG 1
 #define COLONY_SIZE 50
 
-/*
-    TO DO list:
-    - better ant vision ? shorter is better ? (follow / find)
-
-    - soldier ant 
-
-    - proper evolution, leave it running overnight
-*/
 
 unsigned char color[3];
 bool PLAY, Graphics;
@@ -40,6 +34,7 @@ Colony blue_ants, red_ants;
 Food food;
 
 
+// this function is called to draw what the user can see
 void interface(){
     unsigned char color[3];
 
@@ -47,16 +42,18 @@ void interface(){
     retangle(0, 0, 2, 2, color); // background
 
     if(Graphics){
-
+	
+		// this draws all pheromones that are flaged to be drawn
         draw_pheromones(blue_ants.pheromones, red_ants.pheromones, blue_ants.draw_phero, red_ants.draw_phero);
         
         draw_nest(-0.5, -0.5, BLUE);
-        draw_nest( 0.5, 0.5, RED);
+        draw_nest( 0.5, 0.5, RED); // colored squares
 
         setColor(color, GREEN);
         retangle(convert_range(food.x), convert_range(food.y), 0.04, 0.04, color); // Food spot
         
-
+		
+		// blue ants, workers and soldiers
         setColor(color, LIGHT_BLUE);
 
         for(int i=0; i<blue_ants.soldiers_amount; i++)
@@ -68,7 +65,7 @@ void interface(){
                 triangle(convert_range(blue_ants.ants[i].x), convert_range(blue_ants.ants[i].y), 0.02, 0.02, color);
         
 
-        
+        // red ants
         setColor(color, LIGHT_RED);
         
         for(int i=0; i<red_ants.soldiers_amount; i++)
@@ -81,6 +78,7 @@ void interface(){
         
     }
     
+    // draw menu even if the graphics is turned off
     draw_bottom_menu(PLAY, Graphics,  blue_ants.draw_phero, red_ants.draw_phero);
     
     glutSwapBuffers();	
@@ -98,6 +96,7 @@ void processInterface(){
         glutReshapeWindow(900, 900);
     }
     
+    // this checks for the PAUSE/PLAY state
     if(PLAY){        
         process_colony(&blue_ants, red_ants.ant_position, &food);
         process_colony(&red_ants, blue_ants.ant_position, &food);
@@ -107,7 +106,7 @@ void processInterface(){
     return;
 }
 
-
+// this function deals with the mouse clicks on the simulation window
 void button_click(int button, int state,int x, int y){
 	if(button==GLUT_LEFT_BUTTON && state==GLUT_DOWN){
 		if(DEBUG) 
@@ -123,10 +122,10 @@ void button_click(int button, int state,int x, int y){
             reset_colony(&blue_ants);
             reset_colony(&red_ants);
             
-        }else if(x > 110&& x < 135&&y > 860&& y < 890){
+        }else if(x > 110&& x < 135&&y > 860&& y < 890){ // toggle graphics button
             Graphics = !Graphics; if(DEBUG) cout << " - Graphics pressed";
 
-        }else if(x > 255&& x < 285&&y > 860&& y < 890){
+        }else if(x > 255&& x < 285&&y > 860&& y < 890){ // draw / hide color pheromone button
             blue_ants.draw_phero = !blue_ants.draw_phero; if(DEBUG) cout << " - Blue pheromones pressed";
 
         }else if(x > 480&& x < 510&&y > 860&& y < 890){

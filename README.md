@@ -7,3 +7,12 @@ Computação Bioinspirada, Sistemas Evolutivos
 ## Author
 Luca Gomes Urssi
 
+
+comments
+
+time -> cicles
+
+Readme
+
+GPU 
+

@@ -35,7 +35,7 @@ void RenderString(float x, float y, std::string string);
 void draw_bottom_menu(bool PLAY, bool Graphics, bool b_phero, bool r_phero);
 
 // this function draws a colored square on the x,y position
-// to do: make the nest look better
+// TODO: make the nest look better
 void draw_nest(float x, float y, unsigned char R, unsigned char G, unsigned char B);
 
 void draw_pheromones(unsigned char b_phero[900][900][3], unsigned char r_phero[900][900][3], bool draw_blue, bool draw_red);
